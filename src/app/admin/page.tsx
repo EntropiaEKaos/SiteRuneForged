@@ -24,48 +24,48 @@ export default function PortalAdminPage() {
         </nav>
         <div className={styles.sidebarFoot}>
           <span>CONTROL PLANE</span>
-          <p>UI separada do portal público e preparada para reutilizar autenticação, MFA e roles do RuneForge.</p>
+          <p>UI separada do portal público e integrada ao modelo de autenticação, MFA e roles do RuneForge.</p>
         </div>
       </aside>
 
       <section className={styles.workspace}>
         <header className={styles.topbar}>
           <div><span className={styles.kicker}>ADMINISTRAÇÃO DO PORTAL</span><h1>Controle total. Publicação segura.</h1></div>
-          <div className={styles.operator}><span className={styles.statusDot}/><div><strong>Ambiente preparado</strong><small>Admin API aguardando configuração</small></div></div>
+          <div className={styles.operator}><span className={styles.statusDot}/><div><strong>CMS em integração</strong><small>Backend versionado no RuneForge PR #86</small></div><a className={styles.operatorLink} href="/admin/login">Entrar</a></div>
         </header>
 
         <section id="overview" className={styles.overview}>
-          <article><span>RECURSOS</span><strong>{portalResources.length}</strong><p>domínios administráveis catalogados</p></article>
+          <article><span>RECURSOS</span><strong>{portalResources.length}</strong><p>domínios com editor operacional</p></article>
           <article><span>WORKFLOW</span><strong>4</strong><p>estágios até a publicação auditável</p></article>
-          <article><span>SEGURANÇA</span><strong>5</strong><p>roles herdáveis do painel RuneForge</p></article>
-          <article><span>FONTE</span><strong>1</strong><p>control plane compartilhado com o game</p></article>
+          <article><span>SEGURANÇA</span><strong>5</strong><p>roles compartilhados com RuneForge</p></article>
+          <article><span>BACKEND</span><strong>86</strong><p>PR do control plane CMS</p></article>
         </section>
 
         <section id="content" className={styles.section}>
-          <div className={styles.sectionHead}><div><span className={styles.kicker}>CONTEÚDO</span><h2>Tudo que aparece no portal terá dono.</h2></div><p>O site público deixa de depender de textos hardcoded e passa a consumir conteúdo versionado do backend administrativo.</p></div>
+          <div className={styles.sectionHead}><div><span className={styles.kicker}>CONTEÚDO</span><h2>Tudo que aparece no portal terá dono.</h2></div><p>Os 16 domínios já possuem editor versionado. O backend decide quem pode editar e publicar; o browser nunca recebe credenciais privilegiadas.</p></div>
           <div className={styles.resourceGrid}>
             {portalResources.map((resource, index) => (
               <article className={styles.resourceCard} key={resource.key}>
-                <div className={styles.resourceTop}><span>{String(index + 1).padStart(2, "0")}</span><em>CONFIGURÁVEL</em></div>
+                <div className={styles.resourceTop}><span>{String(index + 1).padStart(2, "0")}</span><em>EDITOR ATIVO</em></div>
                 <h3>{resource.label}</h3>
                 <p>{resource.description}</p>
                 <div className={styles.roleRow}><small>Editar</small><span>{resource.ownerRoles.join(" · ")}</span></div>
                 <div className={styles.roleRow}><small>Publicar</small><span>{resource.publishRoles.join(" · ")}</span></div>
-                <button type="button" disabled aria-label={`Editor de ${resource.label} aguardando API de persistência`}>Abrir editor <span>→</span></button>
+                <a className={styles.editorLink} href={`/admin/${resource.key}`}>Abrir editor <span>→</span></a>
               </article>
             ))}
           </div>
         </section>
 
         <section id="publishing" className={styles.section}>
-          <div className={styles.sectionHead}><div><span className={styles.kicker}>PIPELINE EDITORIAL</span><h2>Editar não significa publicar.</h2></div><p>Produção fica protegida por papéis, validação e histórico. O próximo backend conecta estes estados às versões e auditoria já existentes no RuneForge.</p></div>
+          <div className={styles.sectionHead}><div><span className={styles.kicker}>PIPELINE EDITORIAL</span><h2>Editar não significa publicar.</h2></div><p>Produção fica protegida por papéis, validação e histórico. Cada mudança gera uma nova versão e uma entrada de auditoria no control plane.</p></div>
           <div className={styles.workflow}>
             {workflow.map(([number, title, text]) => <article key={title}><span>{number}</span><h3>{title}</h3><p>{text}</p></article>)}
           </div>
         </section>
 
         <section id="security" className={styles.security}>
-          <div><span className={styles.kicker}>SEGURANÇA</span><h2>Um único sistema de operadores.</h2><p>Não haverá uma segunda base de usuários administrativos. O Portal Control foi desenhado para trabalhar com os papéis <b>admin</b>, <b>designer</b>, <b>qa</b>, <b>liveops</b> e <b>publisher</b> já usados pelo RuneForge, preservando MFA, step-up e auditoria no control plane.</p></div>
+          <div><span className={styles.kicker}>SEGURANÇA</span><h2>Um único sistema de operadores.</h2><p>Não haverá uma segunda base de usuários administrativos. O Portal Control trabalha com os papéis <b>admin</b>, <b>designer</b>, <b>qa</b>, <b>liveops</b> e <b>publisher</b> já usados pelo RuneForge, preservando MFA, sessão HttpOnly e auditoria no control plane.</p></div>
           <div className={styles.securityStack}><span>ADMIN</span><span>DESIGNER</span><span>QA</span><span>LIVEOPS</span><span>PUBLISHER</span></div>
         </section>
 
