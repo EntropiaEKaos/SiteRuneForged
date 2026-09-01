@@ -33,14 +33,65 @@ export interface PortalContentRecord<T = unknown> {
   publishedAt?: string | null;
 }
 
+export interface NavigationContent {
+  brandSubtitle: string;
+  links: Array<{ label: string; href: string }>;
+  cta: { label: string; href: string };
+  footerLabel: string;
+  footerTagline: string;
+  copyright: string;
+}
+
 export interface HomeContent {
-  eyebrow: string;
+  hero: {
+    eyebrow: string;
+    title: string;
+    accentTitle: string;
+    description: string;
+    primaryCta: { label: string; href: string };
+    secondaryCta: { label: string; href: string };
+    stats: Array<{ value: string; label: string }>;
+  };
+  arsenal: {
+    kicker: string;
+    title: string;
+    description: string;
+  };
+  battle: {
+    kicker: string;
+    titleLines: string[];
+    accentLine: string;
+    description: string;
+    points: Array<{ number: string; label: string }>;
+    cta: { label: string; href: string };
+  };
+  alpha: {
+    label: string;
+    title: string;
+    description: string;
+    cta: { label: string; href: string };
+  };
+}
+
+export interface CardShowcaseContent {
+  certifiedTypesLabel: string;
+  cardTypes: string[];
+  featured: Array<{
+    mana: string;
+    region: string;
+    meta: string;
+    title: string;
+    description: string;
+    stats: [string, string];
+    variant: "a" | "b";
+  }>;
+}
+
+export interface RegionShowcaseContent {
+  kicker: string;
   title: string;
-  accentTitle: string;
   description: string;
-  primaryCta: { label: string; href: string };
-  secondaryCta: { label: string; href: string };
-  alphaLabel: string;
+  items: Array<{ name: string; description: string; icon: string; href: string }>;
 }
 
 export interface SeoContent {
@@ -63,7 +114,7 @@ export const portalResources: PortalResourceDefinition[] = [
   { key: "home", label: "Home", description: "Hero, CTAs, destaques e seções da página inicial.", ownerRoles: ["admin", "designer", "publisher"], publishRoles: ["admin", "publisher"] },
   { key: "navigation", label: "Navegação", description: "Menus, links globais, header e footer.", ownerRoles: ["admin", "designer", "publisher"], publishRoles: ["admin", "publisher"] },
   { key: "pages", label: "Páginas", description: "Páginas institucionais e blocos editoriais.", ownerRoles: ["admin", "designer", "publisher"], publishRoles: ["admin", "publisher"] },
-  { key: "cards", label: "Cartas", description: "Catálogo público sincronizado com o Card Studio.", ownerRoles: ["admin", "designer", "qa"], publishRoles: ["admin", "publisher"] },
+  { key: "cards", label: "Cartas", description: "Apresentação pública do catálogo sincronizado com o Card Studio.", ownerRoles: ["admin", "designer", "qa"], publishRoles: ["admin", "publisher"] },
   { key: "collections", label: "Coleções", description: "Coleções, símbolos, textos e visibilidade pública.", ownerRoles: ["admin", "designer", "publisher"], publishRoles: ["admin", "publisher"] },
   { key: "regions", label: "Regiões", description: "Identidade, doutrina, textos, arte e destaque das regiões.", ownerRoles: ["admin", "designer", "publisher"], publishRoles: ["admin", "publisher"] },
   { key: "keywords", label: "Keywords", description: "Glossário público e explicações de mecânicas.", ownerRoles: ["admin", "designer", "qa"], publishRoles: ["admin", "publisher"] },
