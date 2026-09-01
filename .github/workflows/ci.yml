@@ -13,7 +13,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
       - run: npm install
       - run: npm run typecheck
       - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: |
+          npm start &
+          npx wait-on http://127.0.0.1:3000
+          npm run visual:test
+      - name: Upload visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rune-forge-visual-evidence
+          path: visual-evidence/
+          if-no-files-found: warn
