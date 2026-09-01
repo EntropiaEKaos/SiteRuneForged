@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { PortalResourceDefinition } from "@/lib/cms/content-model";
+import { defaultCardsHome, defaultHome, defaultNavigation, defaultRegionsHome } from "@/lib/cms/defaults";
 import styles from "../editor.module.css";
 
 type CmsVersion = {
@@ -28,18 +29,22 @@ type CmsItem = {
 
 const pretty = (value: unknown) => JSON.stringify(value ?? {}, null, 2);
 
+function initialResource(definition: PortalResourceDefinition) {
+  switch (definition.key) {
+    case "home": return { slug: "main", payload: defaultHome };
+    case "navigation": return { slug: "main", payload: defaultNavigation };
+    case "cards": return { slug: "home", payload: defaultCardsHome };
+    case "regions": return { slug: "home", payload: defaultRegionsHome };
+    case "alpha": return { slug: "main", payload: defaultHome.alpha };
+    default: return { slug: "main", payload: {} };
+  }
+}
+
 export default function ResourceEditor({ definition }: { definition: PortalResourceDefinition }) {
-  const [slug, setSlug] = useState(definition.key === "home" || definition.key === "navigation" || definition.key === "alpha" ? "main" : "main");
+  const initial = useMemo(() => initialResource(definition), [definition]);
+  const [slug, setSlug] = useState(initial.slug);
   const [locale, setLocale] = useState("pt-BR");
-  const [payload, setPayload] = useState(definition.key === "home" ? pretty({
-    eyebrow: "O CAMPO RESPONDE À SUA VONTADE",
-    title: "Forje sua lenda.",
-    accentTitle: "Quebre o destino.",
-    description: "RuneForge é um card game tático onde timing, construção de deck e leitura do adversário importam tanto quanto poder bruto.",
-    primaryCta: { label: "Descobrir RuneForge", href: "#cards" },
-    secondaryCta: { label: "Aprender a jogar", href: "#rules" },
-    alphaLabel: "ALPHA EM CONSTRUÇÃO"
-  }) : "{}");
+  const [payload, setPayload] = useState(pretty(initial.payload));
   const [seo, setSeo] = useState("{}");
   const [changeNote, setChangeNote] = useState("");
   const [item, setItem] = useState<CmsItem | null>(null);
@@ -68,7 +73,7 @@ export default function ResourceEditor({ definition }: { definition: PortalResou
       if (!response.ok) {
         if (response.status === 404) {
           setItem(null); setVersions([]);
-          setMessage({ kind: "notice", text: "Registro ainda não existe. Preencha o payload e salve o primeiro rascunho." });
+          setMessage({ kind: "notice", text: "Registro ainda não existe. O editor está preenchido com o bootstrap seguro; salve o primeiro rascunho." });
           return;
         }
         if (response.status === 401) throw new Error("Sessão expirada. Entre novamente no Portal Control.");
@@ -144,7 +149,7 @@ export default function ResourceEditor({ definition }: { definition: PortalResou
         <div className={styles.fields}>
           <div className={styles.field}><label>Slug</label><input value={slug} onChange={(e) => setSlug(e.target.value)} /></div>
           <div className={styles.field}><label>Locale</label><select value={locale} onChange={(e) => setLocale(e.target.value)}><option>pt-BR</option><option>en-US</option><option>es-ES</option></select></div>
-          <div className={`${styles.field} ${styles.full}`}><label>Payload JSON</label><textarea value={payload} onChange={(e) => setPayload(e.target.value)} spellCheck={false} /><div className={styles.jsonHint}>Editor universal: todos os 16 domínios podem ser persistidos agora. Formulários especializados serão adicionados sem alterar este contrato.</div></div>
+          <div className={`${styles.field} ${styles.full}`}><label>Payload JSON</label><textarea value={payload} onChange={(e) => setPayload(e.target.value)} spellCheck={false} /><div className={styles.jsonHint}>Editor universal: todos os 16 domínios podem ser persistidos. Home, Navegação, Cartas e Regiões já abrem com o payload exato consumido pela página pública.</div></div>
           <div className={`${styles.field} ${styles.full}`}><label>SEO / Metadata JSON</label><textarea className={styles.small} value={seo} onChange={(e) => setSeo(e.target.value)} spellCheck={false} /></div>
           <div className={`${styles.field} ${styles.full}`}><label>Nota da alteração</label><input value={changeNote} onChange={(e) => setChangeNote(e.target.value)} placeholder="O que mudou nesta versão?" /></div>
         </div>
