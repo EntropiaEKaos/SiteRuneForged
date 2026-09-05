@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { getPublishedItem, getPublishedList } from "@/lib/cms/public-content";
+import { notFound } from "next/navigation";
+import { getPublishedItemOrNull, getPublishedList } from "@/lib/cms/public-content";
 import { fallbackArticle, publicSections, type EditorialPayload, type PublicSectionKey } from "@/lib/cms/public-sections";
 
 function formatPublishedAt(value?: string | null) {
@@ -75,7 +76,8 @@ export async function PortalSectionIndex({ section }: { section: PublicSectionKe
 export async function PortalSectionArticle({ section, slug }: { section: PublicSectionKey; slug: string }) {
   const config = publicSections[section];
   const fallback = fallbackArticle(section, slug);
-  const item = await getPublishedItem<EditorialPayload>(config.resource, slug, fallback);
+  const item = await getPublishedItemOrNull<EditorialPayload>(config.resource, slug, fallback);
+  if (!item) notFound();
   const body = item.payload.body?.length ? item.payload.body : [item.payload.summary];
 
   return (
