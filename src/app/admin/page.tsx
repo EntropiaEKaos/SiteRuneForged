@@ -31,14 +31,14 @@ export default function PortalAdminPage() {
       <section className={styles.workspace}>
         <header className={styles.topbar}>
           <div><span className={styles.kicker}>ADMINISTRAÇÃO DO PORTAL</span><h1>Controle total. Publicação segura.</h1></div>
-          <div className={styles.operator}><span className={styles.statusDot}/><div><strong>CMS em integração</strong><small>Backend versionado no RuneForge PR #86</small></div><a className={styles.operatorLink} href="/admin/login">Entrar</a></div>
+          <div className={styles.operator}><span className={styles.statusDot}/><div><strong>CMS 2.1 integrado</strong><small>Autoridade versionada no RuneForgedTCG · PR #137</small></div><a className={styles.operatorLink} href="/admin/login">Entrar</a></div>
         </header>
 
         <section id="overview" className={styles.overview}>
           <article><span>RECURSOS</span><strong>{portalResources.length}</strong><p>domínios com editor operacional</p></article>
           <article><span>WORKFLOW</span><strong>4</strong><p>estágios até a publicação auditável</p></article>
           <article><span>SEGURANÇA</span><strong>5</strong><p>roles compartilhados com RuneForge</p></article>
-          <article><span>BACKEND</span><strong>86</strong><p>PR do control plane CMS</p></article>
+          <article><span>BACKEND</span><strong>2.1</strong><p>CMS versionado + continuidade pública</p></article>
         </section>
 
         <section id="content" className={styles.section}>
@@ -69,7 +69,7 @@ export default function PortalAdminPage() {
           <div className={styles.securityStack}><span>ADMIN</span><span>DESIGNER</span><span>QA</span><span>LIVEOPS</span><span>PUBLISHER</span></div>
         </section>
 
-        <footer className={styles.footer}><span>RuneForge Portal Control · CMS Foundation</span><a href="/">Ver portal público ↗</a></footer>
+        <footer className={styles.footer}><span>RuneForge Portal Control · CMS 2.1</span><a href="/">Ver portal público ↗</a></footer>
       </section>
     </main>
   );
