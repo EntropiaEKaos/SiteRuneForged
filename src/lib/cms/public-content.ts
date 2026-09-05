@@ -1,4 +1,4 @@
-import { apiGet } from "@/lib/runeforge-api/client";
+import { apiGet, RuneForgeApiError } from "@/lib/runeforge-api/client";
 import type { PortalResourceKey } from "./content-model";
 
 export type PortalPublishedItem<T> = {
@@ -39,6 +39,23 @@ export async function getPublishedItem<T>(
   }
 }
 
+export async function getPublishedItemOrNull<T>(
+  resource: PortalResourceKey,
+  slug: string,
+  fallback: PortalPublishedItem<T>,
+  locale = "pt-BR",
+): Promise<PortalPublishedItem<T> | null> {
+  try {
+    const response = await apiGet<PublishedResponse<T>>(
+      `/api/public/site/${resource}/${encodeURIComponent(slug)}?locale=${encodeURIComponent(locale)}`,
+    );
+    return response.item ?? null;
+  } catch (error) {
+    if (error instanceof RuneForgeApiError && error.status === 404) return null;
+    return fallback;
+  }
+}
+
 export async function getPublishedList<T>(
   resource: PortalResourceKey,
   fallback: PortalPublishedItem<T>[] = [],
@@ -48,7 +65,7 @@ export async function getPublishedList<T>(
     const response = await apiGet<PublishedListResponse<T>>(
       `/api/public/site/${resource}?locale=${encodeURIComponent(locale)}`,
     );
-    return response.items?.length ? response.items : fallback;
+    return Array.isArray(response.items) ? response.items : fallback;
   } catch {
     return fallback;
   }
