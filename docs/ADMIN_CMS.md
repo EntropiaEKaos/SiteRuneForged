@@ -7,9 +7,9 @@ O portal público deve ser totalmente administrável sem duplicar a engine, o Ca
 ## Estado da implementação
 
 - UI administrativa e catálogo de recursos: `SiteRuneForged`.
-- Persistência/API administrativa e pública: `RuneForgedTCG`, PR #86 (`feat/site-cms-api`).
+- Persistência/API administrativa e pública: `RuneForgedTCG`, Portal CMS 2.0 + Portal CMS Studio 2.1, integrados pelo PR #137.
 - Evidência visual: Playwright desktop + mobile em GitHub Actions.
-- Próxima ligação: BFF de sessão/editor para tornar os botões do painel operacionais contra a API certificada.
+- BFF de sessão/editor: operacional e alinhado ao contrato versionado do backend.
 
 ## Princípios
 
@@ -39,7 +39,7 @@ Administração autenticada:
 - `POST /api/admin/site/:resource/:slug/archive`
 - `POST /api/admin/site/:resource/:slug/rollback/:version`
 
-O frontend possui um bridge server-side alinhado à sessão HttpOnly `rf_admin_session`. O backend do PR #86 implementa persistência, versionamento, RBAC e auditoria.
+O frontend possui um bridge server-side alinhado à sessão HttpOnly `rf_admin_session`. O RuneForgedTCG implementa persistência, versionamento, RBAC, auditoria e o workspace administrativo central em `/admin/studio/site`.
 
 ## Matriz de responsabilidade
 
@@ -51,13 +51,13 @@ O frontend possui um bridge server-side alinhado à sessão HttpOnly `rf_admin_s
 
 ## Persistência
 
-Não existe uma base paralela de usuários no site. O conteúdo editorial vive em `site_content`; cada alteração cria snapshot em `site_content_versions`, e operações administrativas registram `adminAuditLogs`. O público só recebe registros em estado `published`.
+Não existe uma base paralela de usuários no site. O conteúdo editorial vive em `site_content`; cada alteração cria snapshot em `site_content_versions`, e operações administrativas registram `adminAuditLogs`. A API pública expõe somente a publicação efetiva: a versão publicada atual ou, durante edição draft/review, o último snapshot publicado válido; um archive funciona como tombstone até um novo publish explícito.
 
 ## Segurança
 
 - cookies administrativos não são convertidos em tokens expostos no browser;
 - mutations validam a sessão e o role no backend;
-- nenhuma rota `/api/public/site/*` retorna conteúdo draft ou histórico;
+- nenhuma rota `/api/public/site/*` retorna draft/review, identidade de operador, notas de alteração ou histórico administrativo;
 - edição e publicação têm gates independentes;
 - toda mutation relevante gera auditoria.
 
@@ -65,12 +65,21 @@ Não existe uma base paralela de usuários no site. O conteúdo editorial vive e
 
 Toda mudança relevante no painel gera screenshots reais em Chromium por GitHub Actions. A suíte Playwright cobre desktop (1440x1100) e mobile (390x844), armazenados no artifact `rune-forge-visual-evidence` junto das evidências da Home pública.
 
-## Sequência para administração total
+## Contrato de concorrência
 
-1. certificar e integrar o PR #86 do backend;
-2. conectar login/logout e sessão via BFF do SiteRuneForged;
-3. ativar editor real de Home/SEO/Navegação;
-4. migrar a Home pública de hardcoded para conteúdo publicado;
-5. ativar editores de páginas, lore, notícias, mídia, eventos e roadmap;
-6. adicionar preview de draft, aprovação e histórico/rollback na UI;
-7. certificar E2E: login -> editar -> preview -> publicar -> portal público atualizado.
+Toda mutation administrativa carrega `expectedVersion`:
+
+- criação inicial usa `0`;
+- edições, publish, archive e rollback usam a versão corrente carregada;
+- HTTP `409` preserva o JSON local e exige recarregar a versão do servidor;
+- o Portal Control nunca força sobrescrita silenciosa.
+
+## Estado atual e próximos gates
+
+1. backend CMS 2.1 integrado no RuneForgedTCG;
+2. login/logout e sessão BFF do SiteRuneForged implementados;
+3. Home pública já consome Home, Navegação, Cartas e Regiões publicados com fallback seguro;
+4. editor universal cobre os 16 recursos;
+5. histórico, publish, archive e rollback estão ligados ao backend;
+6. contrato `expectedVersion`/409 é bloqueado por CI;
+7. próximo incremento: páginas públicas especializadas para Notícias, Lore, Regras, Coleções, Eventos e Roadmap, seguidas por E2E real contra um backend RuneForge de teste.
