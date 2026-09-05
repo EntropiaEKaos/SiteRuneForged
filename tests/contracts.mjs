@@ -35,8 +35,12 @@ assert.match(session, /Set-Cookie/);
 assert.match(publicContent, /\/api\/public\/site\//);
 assert.match(publicContent, /getPublishedList/);
 assert.match(publicContent, /getPublishedItem/);
+assert.match(publicContent, /getPublishedItemOrNull/);
+assert.match(publicContent, /error\.status === 404/);
+assert.match(publicContent, /Array\.isArray\(response\.items\)/);
 assert.match(editorial, /getPublishedList/);
-assert.match(editorial, /getPublishedItem/);
+assert.match(editorial, /getPublishedItemOrNull/);
+assert.match(editorial, /notFound/);
 
 for (const section of ["news", "lore", "rules", "collections", "events", "roadmap"]) {
   assert.ok(publicSections.includes(`${section}:`), `missing public section config ${section}`);
