@@ -35,7 +35,6 @@ jobs:
     env:
       RUNEFORGE_BACKEND_REF: e46878f5251d279ad7067c20ab97966387f5f9e5
       DATABASE_URL: postgresql://runeforge:runeforge_integration_only@localhost:5432/runeforge_integration
-      NODE_ENV: test
       RANKED_RELEASE_CERTIFIED: "false"
 
     steps:
