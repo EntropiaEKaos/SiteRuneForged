@@ -1,0 +1,203 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import type { PortalResourceDefinition } from "@/lib/cms/content-model";
+import { defaultCardsHome, defaultHome, defaultNavigation, defaultRegionsHome } from "@/lib/cms/defaults";
+import styles from "../editor.module.css";
+
+type CmsVersion = {
+  id: number;
+  version: number;
+  status: string;
+  actor: string;
+  changeNote?: string;
+  createdAt?: string;
+};
+
+type CmsItem = {
+  id: number;
+  slug: string;
+  locale: string;
+  status: string;
+  payload: unknown;
+  seo: unknown;
+  version: number;
+  updatedBy: string;
+  updatedAt: string;
+  publishedAt?: string | null;
+};
+
+const pretty = (value: unknown) => JSON.stringify(value ?? {}, null, 2);
+
+function initialResource(definition: PortalResourceDefinition) {
+  switch (definition.key) {
+    case "home": return { slug: "main", payload: defaultHome };
+    case "navigation": return { slug: "main", payload: defaultNavigation };
+    case "cards": return { slug: "home", payload: defaultCardsHome };
+    case "regions": return { slug: "home", payload: defaultRegionsHome };
+    case "alpha": return { slug: "main", payload: defaultHome.alpha };
+    default: return { slug: "main", payload: {} };
+  }
+}
+
+export default function ResourceEditor({ definition }: { definition: PortalResourceDefinition }) {
+  const initial = useMemo(() => initialResource(definition), [definition]);
+  const [slug, setSlug] = useState(initial.slug);
+  const [locale, setLocale] = useState("pt-BR");
+  const [payload, setPayload] = useState(pretty(initial.payload));
+  const [seo, setSeo] = useState("{}");
+  const [changeNote, setChangeNote] = useState("");
+  const [item, setItem] = useState<CmsItem | null>(null);
+  const [versions, setVersions] = useState<CmsVersion[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<{ kind: "error" | "success" | "notice"; text: string } | null>(null);
+  const [conflictVersion, setConflictVersion] = useState<number | null>(null);
+
+  const endpoint = useMemo(() => `/api/portal-admin/site/${definition.key}/${encodeURIComponent(slug)}?locale=${encodeURIComponent(locale)}`, [definition.key, slug, locale]);
+  const expectedVersion = item?.version ?? 0;
+
+  function mutationError(response: Response, data: { error?: string; currentVersion?: number }, fallback: string) {
+    if (response.status === 409) {
+      const currentVersion = Number(data.currentVersion ?? 0);
+      setConflictVersion(currentVersion);
+      return new Error(`Conflito de versão: o editor está em v${expectedVersion}, mas o servidor já está em v${currentVersion}. Seu JSON local foi preservado; carregue a versão atual antes de tentar novamente.`);
+    }
+    return new Error(data.error || fallback);
+  }
+
+  function parseJson(value: string, field: string) {
+    try {
+      const parsed = JSON.parse(value);
+      if (!parsed || Array.isArray(parsed) || typeof parsed !== "object") throw new Error();
+      return parsed;
+    } catch {
+      throw new Error(`${field} precisa ser um objeto JSON válido.`);
+    }
+  }
+
+  async function load() {
+    if (!slug.trim()) return setMessage({ kind: "error", text: "Informe um slug." });
+    setBusy(true); setMessage(null);
+    try {
+      const response = await fetch(endpoint, { cache: "no-store" });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        if (response.status === 404) {
+          setItem(null); setVersions([]); setConflictVersion(null);
+          setMessage({ kind: "notice", text: "Registro ainda não existe. O editor está preenchido com o bootstrap seguro; salve o primeiro rascunho." });
+          return;
+        }
+        if (response.status === 401) throw new Error("Sessão expirada. Entre novamente no Portal Control.");
+        throw new Error(data.error || "Falha ao carregar conteúdo.");
+      }
+      setItem(data.item);
+      setVersions(data.versions ?? []);
+      setConflictVersion(null);
+      setPayload(pretty(data.item.payload));
+      setSeo(pretty(data.item.seo));
+      setMessage({ kind: "success", text: `Versão ${data.item.version} carregada.` });
+    } catch (error) {
+      setMessage({ kind: "error", text: error instanceof Error ? error.message : "Falha ao carregar." });
+    } finally { setBusy(false); }
+  }
+
+  async function save(status: "draft" | "review") {
+    setBusy(true); setMessage(null);
+    try {
+      const response = await fetch(endpoint, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ locale, expectedVersion, payload: parseJson(payload, "Payload"), seo: parseJson(seo, "SEO"), status, changeNote }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw mutationError(response, data, "Falha ao salvar conteúdo.");
+      setItem(data.item);
+      setConflictVersion(null);
+      setMessage({ kind: "success", text: `${status === "review" ? "Revisão" : "Rascunho"} salva como versão ${data.item.version}.` });
+      await load();
+    } catch (error) {
+      setMessage({ kind: "error", text: error instanceof Error ? error.message : "Falha ao salvar." });
+    } finally { setBusy(false); }
+  }
+
+  async function transition(action: "publish" | "archive") {
+    setBusy(true); setMessage(null);
+    try {
+      const response = await fetch(`/api/portal-admin/site/${definition.key}/${encodeURIComponent(slug)}/${action}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ locale, expectedVersion, changeNote }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw mutationError(response, data, `Falha ao executar ${action}.`);
+      setConflictVersion(null);
+      setMessage({ kind: "success", text: action === "publish" ? `Publicado na versão ${data.item.version}.` : `Arquivado na versão ${data.item.version}.` });
+      await load();
+    } catch (error) {
+      setMessage({ kind: "error", text: error instanceof Error ? error.message : "Falha na transição." });
+    } finally { setBusy(false); }
+  }
+
+  async function rollback(version: number) {
+    if (!confirm(`Restaurar a versão ${version} como um novo rascunho?`)) return;
+    setBusy(true); setMessage(null);
+    try {
+      const response = await fetch(`/api/portal-admin/site/${definition.key}/${encodeURIComponent(slug)}/rollback/${version}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ locale, expectedVersion, changeNote: `Rollback solicitado pelo Portal Control para v${version}` }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw mutationError(response, data, "Falha no rollback.");
+      setConflictVersion(null);
+      setMessage({ kind: "success", text: `Versão ${version} restaurada como novo rascunho v${data.item.version}.` });
+      await load();
+    } catch (error) {
+      setMessage({ kind: "error", text: error instanceof Error ? error.message : "Falha no rollback." });
+    } finally { setBusy(false); }
+  }
+
+  return (
+    <>
+      <section className={styles.panel}>
+        <div className={styles.panelTitle}><h2>Conteúdo versionado</h2><span>{definition.key.toUpperCase()}</span></div>
+        <div className={styles.fields}>
+          <div className={styles.field}><label>Slug</label><input value={slug} onChange={(e) => setSlug(e.target.value)} /></div>
+          <div className={styles.field}><label>Locale</label><select value={locale} onChange={(e) => setLocale(e.target.value)}><option>pt-BR</option><option>en-US</option><option>es-ES</option></select></div>
+          <div className={`${styles.field} ${styles.full}`}><label>Payload JSON</label><textarea value={payload} onChange={(e) => setPayload(e.target.value)} spellCheck={false} /><div className={styles.jsonHint}>Editor universal: todos os 16 domínios podem ser persistidos. Home, Navegação, Cartas e Regiões já abrem com o payload exato consumido pela página pública.</div></div>
+          <div className={`${styles.field} ${styles.full}`}><label>SEO / Metadata JSON</label><textarea className={styles.small} value={seo} onChange={(e) => setSeo(e.target.value)} spellCheck={false} /></div>
+          <div className={`${styles.field} ${styles.full}`}><label>Nota da alteração</label><input value={changeNote} onChange={(e) => setChangeNote(e.target.value)} placeholder="O que mudou nesta versão?" /></div>
+        </div>
+        {message ? <div className={styles[message.kind]}>{message.text}</div> : null}
+        {conflictVersion !== null ? <div className={styles.notice}>Conflito ativo com a versão v{conflictVersion}. O conteúdo local não foi descartado. Use “Carregar” para sincronizar antes de uma nova mutation.</div> : null}
+        <div className={styles.toolbar}>
+          <button className={styles.secondaryButton} disabled={busy} onClick={load}>Carregar</button>
+          <button className={styles.secondaryButton} disabled={busy || conflictVersion !== null} onClick={() => save("draft")}>Salvar rascunho</button>
+          <button className={styles.secondaryButton} disabled={busy || conflictVersion !== null} onClick={() => save("review")}>Enviar para revisão</button>
+          <button className={styles.primaryButton} disabled={busy || !item || conflictVersion !== null} onClick={() => transition("publish")}>Publicar</button>
+          <button className={styles.dangerButton} disabled={busy || !item || conflictVersion !== null} onClick={() => transition("archive")}>Arquivar</button>
+        </div>
+      </section>
+
+      <aside className={styles.sideStack}>
+        <section className={styles.panel}>
+          <div className={styles.panelTitle}><h2>Estado</h2><span>LIVE</span></div>
+          {item ? <div className={styles.metadata}>
+            <div><small>Status</small><strong>{item.status}</strong></div><div><small>Versão</small><strong>v{item.version}</strong></div>
+            <div><small>Atualizado por</small><strong>{item.updatedBy}</strong></div><div><small>Publicado</small><strong>{item.publishedAt ? "sim" : "não"}</strong></div>
+          </div> : <p className={styles.empty}>Nenhum registro carregado. Use “Carregar” ou salve o primeiro rascunho.</p>}
+        </section>
+        <section className={styles.panel}>
+          <div className={styles.panelTitle}><h2>Histórico</h2><span>{versions.length} VERSÕES</span></div>
+          <div className={styles.history}>
+            {versions.length ? versions.map((version) => <article className={styles.version} key={version.id}>
+              <div className={styles.versionTop}><strong>v{version.version} · {version.status}</strong><span>{version.actor}</span></div>
+              <p>{version.changeNote || "Sem nota editorial."}</p>
+              <button disabled={busy || conflictVersion !== null} onClick={() => rollback(version.version)}>Restaurar como rascunho →</button>
+            </article>) : <p className={styles.empty}>O histórico aparecerá depois do primeiro salvamento.</p>}
+          </div>
+        </section>
+      </aside>
+    </>
+  );
+}

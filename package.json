@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "visual:test": "playwright test"
+    "visual:test": "playwright test",
+    "contract:test": "node tests/contracts.mjs"
   },
   "dependencies": {
     "next": "14.2.31",
