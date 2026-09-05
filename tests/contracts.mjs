@@ -13,6 +13,9 @@ const editorial = read("src/components/PortalEditorial.tsx");
 const contentModel = read("src/lib/cms/content-model.ts");
 const docs = read("docs/ADMIN_CMS.md");
 const adminPage = read("src/app/admin/page.tsx");
+const publicCards = read("src/lib/cards/public-catalog.ts");
+const cardsIndex = read("src/app/cards/page.tsx");
+const cardDetail = read("src/app/cards/[defId]/page.tsx");
 
 assert.match(editor, /const expectedVersion = item\?\.version \?\? 0/);
 assert.ok((editor.match(/expectedVersion/g) || []).length >= 5, "all create/update/lifecycle mutations must carry expectedVersion");
@@ -61,4 +64,17 @@ assert.doesNotMatch(adminPage, /PR #86|>86</);
 assert.match(docs, /expectedVersion/);
 assert.match(docs, /409/);
 
-console.log("PORTAL CMS 2.1 CONTRACT: PASS — 16 resources · optimistic versioning · 409 preservation · HttpOnly BFF · public-only reads · six editorial sections");
+assert.match(publicCards, /\/api\/public\/game\/cards/);
+assert.match(publicCards, /getPublicCardCatalog/);
+assert.match(publicCards, /getPublicCard/);
+assert.match(publicCards, /error\.status === 404/);
+assert.doesNotMatch(publicCards, /admin|Bearer|Authorization|spell|mechanics/);
+assert.match(cardsIndex, /getPublicCardCatalog/);
+assert.match(cardsIndex, /card-catalog-empty/);
+assert.match(cardsIndex, /collection/);
+assert.match(cardDetail, /getPublicCard/);
+assert.match(cardDetail, /notFound/);
+assert.ok(fs.existsSync("src/app/cards/page.tsx"));
+assert.ok(fs.existsSync("src/app/cards/[defId]/page.tsx"));
+
+console.log("PORTAL CONTRACT: PASS — CMS 2.1 · six editorial sections · live public card catalog/detail · no duplicate game authority");

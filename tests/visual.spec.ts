@@ -38,4 +38,19 @@ for (const viewport of [
     await expect(page.locator(".article-body")).toBeVisible();
     await page.screenshot({ path: `visual-evidence/rules-article-${viewport.name}.png`, fullPage: true });
   });
+
+  test(`cards unavailable visual ${viewport.name}`, async ({ page }) => {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await page.goto("http://127.0.0.1:3000/cards", { waitUntil: "networkidle" });
+    await expect(page.locator("h1")).toContainText("Catálogo de cartas");
+    await expect(page.locator(".card-catalog-empty")).toContainText("não respondeu");
+    await page.screenshot({ path: `visual-evidence/cards-unavailable-${viewport.name}.png`, fullPage: true });
+  });
+
+  test(`card detail unavailable visual ${viewport.name}`, async ({ page }) => {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await page.goto("http://127.0.0.1:3000/cards/visual-fixture", { waitUntil: "networkidle" });
+    await expect(page.locator("h1")).toContainText("Não foi possível abrir esta carta");
+    await page.screenshot({ path: `visual-evidence/card-detail-unavailable-${viewport.name}.png`, fullPage: true });
+  });
 }

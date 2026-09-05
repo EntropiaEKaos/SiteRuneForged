@@ -3,7 +3,7 @@ import type { CardShowcaseContent, HomeContent, NavigationContent, RegionShowcas
 export const defaultNavigation: NavigationContent = {
   brandSubtitle: "Tactical Card Game",
   links: [
-    { label: "Cartas", href: "#cards" },
+    { label: "Cartas", href: "/cards" },
     { label: "Regiões", href: "#regions" },
     { label: "Regras", href: "/rules" },
     { label: "Lore", href: "/lore" },
