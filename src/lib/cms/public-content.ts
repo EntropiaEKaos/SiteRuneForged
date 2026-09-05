@@ -1,18 +1,58 @@
 import { apiGet } from "@/lib/runeforge-api/client";
 import type { PortalResourceKey } from "./content-model";
 
+export type PortalPublishedItem<T> = {
+  slug: string;
+  locale: string;
+  payload: T;
+  seo?: unknown;
+  version: number;
+  publishedAt?: string | null;
+};
+
 type PublishedResponse<T> = {
   ok: true;
   resource: PortalResourceKey;
-  item: {
-    slug: string;
-    locale: string;
-    payload: T;
-    seo?: unknown;
-    version: number;
-    publishedAt?: string | null;
-  };
+  item: PortalPublishedItem<T>;
 };
+
+type PublishedListResponse<T> = {
+  ok: true;
+  resource: PortalResourceKey;
+  locale: string;
+  items: PortalPublishedItem<T>[];
+};
+
+export async function getPublishedItem<T>(
+  resource: PortalResourceKey,
+  slug: string,
+  fallback: PortalPublishedItem<T>,
+  locale = "pt-BR",
+): Promise<PortalPublishedItem<T>> {
+  try {
+    const response = await apiGet<PublishedResponse<T>>(
+      `/api/public/site/${resource}/${encodeURIComponent(slug)}?locale=${encodeURIComponent(locale)}`,
+    );
+    return response.item ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+export async function getPublishedList<T>(
+  resource: PortalResourceKey,
+  fallback: PortalPublishedItem<T>[] = [],
+  locale = "pt-BR",
+): Promise<PortalPublishedItem<T>[]> {
+  try {
+    const response = await apiGet<PublishedListResponse<T>>(
+      `/api/public/site/${resource}?locale=${encodeURIComponent(locale)}`,
+    );
+    return response.items?.length ? response.items : fallback;
+  } catch {
+    return fallback;
+  }
+}
 
 export async function getPublishedContent<T>(
   resource: PortalResourceKey,
@@ -20,12 +60,12 @@ export async function getPublishedContent<T>(
   fallback: T,
   locale = "pt-BR",
 ): Promise<T> {
-  try {
-    const response = await apiGet<PublishedResponse<T>>(
-      `/api/public/site/${resource}/${encodeURIComponent(slug)}?locale=${encodeURIComponent(locale)}`,
-    );
-    return response.item?.payload ?? fallback;
-  } catch {
-    return fallback;
-  }
+  const item = await getPublishedItem(resource, slug, {
+    slug,
+    locale,
+    payload: fallback,
+    version: 0,
+    publishedAt: null,
+  }, locale);
+  return item.payload;
 }
