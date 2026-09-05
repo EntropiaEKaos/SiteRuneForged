@@ -19,6 +19,8 @@ const cardDetail = read("src/app/cards/[defId]/page.tsx");
 const publicCollections = read("src/lib/collections/public-collections.ts");
 const collectionsIndex = read("src/app/collections/page.tsx");
 const collectionDetail = read("src/app/collections/[slug]/page.tsx");
+const regionsIndex = read("src/app/regions/page.tsx");
+const regionDetail = read("src/app/regions/[region]/page.tsx");
 
 assert.match(editor, /const expectedVersion = item\?\.version \?\? 0/);
 assert.ok((editor.match(/expectedVersion/g) || []).length >= 5, "all create/update/lifecycle mutations must carry expectedVersion");
@@ -91,4 +93,14 @@ assert.match(collectionDetail, /getPublicCardCatalog/);
 assert.match(collectionDetail, /collection: collection\.key/);
 assert.match(collectionDetail, /notFound/);
 
-console.log("PORTAL CONTRACT: PASS — CMS 2.1 · editorial surfaces · live card catalog · live collections · no duplicate game authority");
+assert.match(regionsIndex, /getPublishedContent<RegionShowcaseContent>/);
+assert.match(regionsIndex, /getPublicCardCatalog/);
+assert.match(regionsIndex, /facets\.regions/);
+assert.match(regionDetail, /getPublishedContent<RegionShowcaseContent>/);
+assert.match(regionDetail, /getPublicCardCatalog/);
+assert.match(regionDetail, /region: region\.name/);
+assert.match(regionDetail, /notFound/);
+assert.ok(fs.existsSync("src/app/regions/page.tsx"));
+assert.ok(fs.existsSync("src/app/regions/[region]/page.tsx"));
+
+console.log("PORTAL CONTRACT: PASS — CMS 2.1 · live cards/collections · CMS-driven regions with live counts · no duplicate game authority");
