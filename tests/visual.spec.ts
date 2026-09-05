@@ -22,4 +22,20 @@ for (const viewport of [
     await expect(page.getByText("Roadmap", { exact: true })).toBeVisible();
     await page.screenshot({ path: `visual-evidence/admin-${viewport.name}.png`, fullPage: true });
   });
+
+  test(`news visual ${viewport.name}`, async ({ page }) => {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await page.goto("http://127.0.0.1:3000/news", { waitUntil: "networkidle" });
+    await expect(page.locator("h1")).toContainText("Novidades da Forja");
+    await expect(page.locator(".content-card")).toHaveCount(2);
+    await page.screenshot({ path: `visual-evidence/news-${viewport.name}.png`, fullPage: true });
+  });
+
+  test(`rules article visual ${viewport.name}`, async ({ page }) => {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await page.goto("http://127.0.0.1:3000/rules/fundamentos", { waitUntil: "networkidle" });
+    await expect(page.locator("h1")).toContainText("Fundamentos do duelo");
+    await expect(page.locator(".article-body")).toBeVisible();
+    await page.screenshot({ path: `visual-evidence/rules-article-${viewport.name}.png`, fullPage: true });
+  });
 }
