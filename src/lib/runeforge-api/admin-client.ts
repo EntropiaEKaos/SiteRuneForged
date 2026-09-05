@@ -8,6 +8,12 @@ export interface AdminRequestOptions extends RequestInit {
   cookieHeader?: string;
 }
 
+export type SiteLifecycleRequest = {
+  locale: string;
+  expectedVersion: number;
+  changeNote?: string;
+};
+
 /**
  * Server-only bridge for RuneForge admin APIs.
  *
@@ -41,8 +47,32 @@ export async function adminApi<T>(path: string, options: AdminRequestOptions = {
 }
 
 export const portalAdminApi = {
-  list: <T>(resource: string, cookieHeader?: string) => adminApi<T>(`/api/admin/site/${resource}`, { cookieHeader }),
-  get: <T>(resource: string, slug: string, cookieHeader?: string) => adminApi<T>(`/api/admin/site/${resource}/${encodeURIComponent(slug)}`, { cookieHeader }),
-  save: <T>(resource: string, slug: string, payload: unknown, cookieHeader?: string) => adminApi<T>(`/api/admin/site/${resource}/${encodeURIComponent(slug)}`, { method: "PUT", body: JSON.stringify(payload), cookieHeader }),
-  publish: <T>(resource: string, slug: string, cookieHeader?: string) => adminApi<T>(`/api/admin/site/${resource}/${encodeURIComponent(slug)}/publish`, { method: "POST", cookieHeader }),
+  list: <T>(resource: string, locale = "pt-BR", cookieHeader?: string) =>
+    adminApi<T>(`/api/admin/site/${resource}?locale=${encodeURIComponent(locale)}`, { cookieHeader }),
+  get: <T>(resource: string, slug: string, locale = "pt-BR", cookieHeader?: string) =>
+    adminApi<T>(`/api/admin/site/${resource}/${encodeURIComponent(slug)}?locale=${encodeURIComponent(locale)}`, { cookieHeader }),
+  save: <T>(resource: string, slug: string, payload: unknown, cookieHeader?: string) =>
+    adminApi<T>(`/api/admin/site/${resource}/${encodeURIComponent(slug)}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+      cookieHeader,
+    }),
+  publish: <T>(resource: string, slug: string, request: SiteLifecycleRequest, cookieHeader?: string) =>
+    adminApi<T>(`/api/admin/site/${resource}/${encodeURIComponent(slug)}/publish`, {
+      method: "POST",
+      body: JSON.stringify(request),
+      cookieHeader,
+    }),
+  archive: <T>(resource: string, slug: string, request: SiteLifecycleRequest, cookieHeader?: string) =>
+    adminApi<T>(`/api/admin/site/${resource}/${encodeURIComponent(slug)}/archive`, {
+      method: "POST",
+      body: JSON.stringify(request),
+      cookieHeader,
+    }),
+  rollback: <T>(resource: string, slug: string, version: number, request: SiteLifecycleRequest, cookieHeader?: string) =>
+    adminApi<T>(`/api/admin/site/${resource}/${encodeURIComponent(slug)}/rollback/${version}`, {
+      method: "POST",
+      body: JSON.stringify(request),
+      cookieHeader,
+    }),
 };
