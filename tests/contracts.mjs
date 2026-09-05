@@ -16,6 +16,9 @@ const adminPage = read("src/app/admin/page.tsx");
 const publicCards = read("src/lib/cards/public-catalog.ts");
 const cardsIndex = read("src/app/cards/page.tsx");
 const cardDetail = read("src/app/cards/[defId]/page.tsx");
+const publicCollections = read("src/lib/collections/public-collections.ts");
+const collectionsIndex = read("src/app/collections/page.tsx");
+const collectionDetail = read("src/app/collections/[slug]/page.tsx");
 
 assert.match(editor, /const expectedVersion = item\?\.version \?\? 0/);
 assert.ok((editor.match(/expectedVersion/g) || []).length >= 5, "all create/update/lifecycle mutations must carry expectedVersion");
@@ -77,4 +80,15 @@ assert.match(cardDetail, /notFound/);
 assert.ok(fs.existsSync("src/app/cards/page.tsx"));
 assert.ok(fs.existsSync("src/app/cards/[defId]/page.tsx"));
 
-console.log("PORTAL CONTRACT: PASS — CMS 2.1 · six editorial sections · live public card catalog/detail · no duplicate game authority");
+assert.match(publicCollections, /\/api\/collections/);
+assert.match(publicCollections, /getPublicCollections/);
+assert.match(publicCollections, /getPublicCollection/);
+assert.doesNotMatch(publicCollections, /admin|Bearer|Authorization/);
+assert.match(collectionsIndex, /getPublicCollections/);
+assert.match(collectionsIndex, /cardCount/);
+assert.match(collectionDetail, /getPublicCollection/);
+assert.match(collectionDetail, /getPublicCardCatalog/);
+assert.match(collectionDetail, /collection: collection\.key/);
+assert.match(collectionDetail, /notFound/);
+
+console.log("PORTAL CONTRACT: PASS — CMS 2.1 · editorial surfaces · live card catalog · live collections · no duplicate game authority");
