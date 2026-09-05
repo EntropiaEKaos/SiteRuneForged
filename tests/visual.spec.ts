@@ -53,4 +53,19 @@ for (const viewport of [
     await expect(page.locator("h1")).toContainText("Não foi possível abrir esta carta");
     await page.screenshot({ path: `visual-evidence/card-detail-unavailable-${viewport.name}.png`, fullPage: true });
   });
+
+  test(`collections unavailable visual ${viewport.name}`, async ({ page }) => {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await page.goto("http://127.0.0.1:3000/collections", { waitUntil: "networkidle" });
+    await expect(page.locator("h1")).toContainText("Coleções de RuneForge");
+    await expect(page.locator(".card-catalog-empty")).toContainText("coleções não responderam");
+    await page.screenshot({ path: `visual-evidence/collections-unavailable-${viewport.name}.png`, fullPage: true });
+  });
+
+  test(`collection detail unavailable visual ${viewport.name}`, async ({ page }) => {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await page.goto("http://127.0.0.1:3000/collections/visual-fixture", { waitUntil: "networkidle" });
+    await expect(page.locator("h1")).toContainText("Não foi possível abrir esta coleção");
+    await page.screenshot({ path: `visual-evidence/collection-detail-unavailable-${viewport.name}.png`, fullPage: true });
+  });
 }
