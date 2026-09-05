@@ -5,11 +5,12 @@ export const defaultNavigation: NavigationContent = {
   links: [
     { label: "Cartas", href: "#cards" },
     { label: "Regiões", href: "#regions" },
-    { label: "Como jogar", href: "#rules" },
-    { label: "Alpha", href: "#alpha" },
+    { label: "Regras", href: "/rules" },
+    { label: "Lore", href: "/lore" },
+    { label: "Notícias", href: "/news" },
   ],
   cta: { label: "Entrar na forja", href: "#alpha" },
-  footerLabel: "Portal oficial • Visual v0.2",
+  footerLabel: "Portal oficial • Conteúdo v0.3",
   footerTagline: "Forge your legend.",
   copyright: "© 2026 RuneForge",
 };
@@ -21,7 +22,7 @@ export const defaultHome: HomeContent = {
     accentTitle: "Quebre o destino.",
     description: "RuneForge é um card game tático onde timing, construção de deck e leitura do adversário importam tanto quanto poder bruto.",
     primaryCta: { label: "Descobrir RuneForge", href: "#cards" },
-    secondaryCta: { label: "Aprender a jogar", href: "#rules" },
+    secondaryCta: { label: "Aprender a jogar", href: "/rules" },
     stats: [
       { value: "6", label: "regiões" },
       { value: "7", label: "tipos de carta" },
@@ -43,7 +44,7 @@ export const defaultHome: HomeContent = {
       { number: "02", label: "Ameace respostas" },
       { number: "03", label: "Domine a prioridade" },
     ],
-    cta: { label: "Preparar-se para o Alpha", href: "#alpha" },
+    cta: { label: "Explorar as regras", href: "/rules" },
   },
   alpha: {
     label: "ALPHA EM CONSTRUÇÃO",
