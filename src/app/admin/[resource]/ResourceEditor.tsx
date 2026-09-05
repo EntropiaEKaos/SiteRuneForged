@@ -51,8 +51,19 @@ export default function ResourceEditor({ definition }: { definition: PortalResou
   const [versions, setVersions] = useState<CmsVersion[]>([]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ kind: "error" | "success" | "notice"; text: string } | null>(null);
+  const [conflictVersion, setConflictVersion] = useState<number | null>(null);
 
   const endpoint = useMemo(() => `/api/portal-admin/site/${definition.key}/${encodeURIComponent(slug)}?locale=${encodeURIComponent(locale)}`, [definition.key, slug, locale]);
+  const expectedVersion = item?.version ?? 0;
+
+  function mutationError(response: Response, data: { error?: string; currentVersion?: number }, fallback: string) {
+    if (response.status === 409) {
+      const currentVersion = Number(data.currentVersion ?? 0);
+      setConflictVersion(currentVersion);
+      return new Error(`Conflito de versão: o editor está em v${expectedVersion}, mas o servidor já está em v${currentVersion}. Seu JSON local foi preservado; carregue a versão atual antes de tentar novamente.`);
+    }
+    return new Error(data.error || fallback);
+  }
 
   function parseJson(value: string, field: string) {
     try {
@@ -72,7 +83,7 @@ export default function ResourceEditor({ definition }: { definition: PortalResou
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
         if (response.status === 404) {
-          setItem(null); setVersions([]);
+          setItem(null); setVersions([]); setConflictVersion(null);
           setMessage({ kind: "notice", text: "Registro ainda não existe. O editor está preenchido com o bootstrap seguro; salve o primeiro rascunho." });
           return;
         }
@@ -81,6 +92,7 @@ export default function ResourceEditor({ definition }: { definition: PortalResou
       }
       setItem(data.item);
       setVersions(data.versions ?? []);
+      setConflictVersion(null);
       setPayload(pretty(data.item.payload));
       setSeo(pretty(data.item.seo));
       setMessage({ kind: "success", text: `Versão ${data.item.version} carregada.` });
@@ -95,11 +107,12 @@ export default function ResourceEditor({ definition }: { definition: PortalResou
       const response = await fetch(endpoint, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ locale, payload: parseJson(payload, "Payload"), seo: parseJson(seo, "SEO"), status, changeNote }),
+        body: JSON.stringify({ locale, expectedVersion, payload: parseJson(payload, "Payload"), seo: parseJson(seo, "SEO"), status, changeNote }),
       });
       const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.error || "Falha ao salvar conteúdo.");
+      if (!response.ok) throw mutationError(response, data, "Falha ao salvar conteúdo.");
       setItem(data.item);
+      setConflictVersion(null);
       setMessage({ kind: "success", text: `${status === "review" ? "Revisão" : "Rascunho"} salva como versão ${data.item.version}.` });
       await load();
     } catch (error) {
@@ -113,10 +126,11 @@ export default function ResourceEditor({ definition }: { definition: PortalResou
       const response = await fetch(`/api/portal-admin/site/${definition.key}/${encodeURIComponent(slug)}/${action}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ locale, changeNote }),
+        body: JSON.stringify({ locale, expectedVersion, changeNote }),
       });
       const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.error || `Falha ao executar ${action}.`);
+      if (!response.ok) throw mutationError(response, data, `Falha ao executar ${action}.`);
+      setConflictVersion(null);
       setMessage({ kind: "success", text: action === "publish" ? `Publicado na versão ${data.item.version}.` : `Arquivado na versão ${data.item.version}.` });
       await load();
     } catch (error) {
@@ -131,10 +145,11 @@ export default function ResourceEditor({ definition }: { definition: PortalResou
       const response = await fetch(`/api/portal-admin/site/${definition.key}/${encodeURIComponent(slug)}/rollback/${version}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ locale, changeNote: `Rollback solicitado pelo Portal Control para v${version}` }),
+        body: JSON.stringify({ locale, expectedVersion, changeNote: `Rollback solicitado pelo Portal Control para v${version}` }),
       });
       const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.error || "Falha no rollback.");
+      if (!response.ok) throw mutationError(response, data, "Falha no rollback.");
+      setConflictVersion(null);
       setMessage({ kind: "success", text: `Versão ${version} restaurada como novo rascunho v${data.item.version}.` });
       await load();
     } catch (error) {
@@ -154,12 +169,13 @@ export default function ResourceEditor({ definition }: { definition: PortalResou
           <div className={`${styles.field} ${styles.full}`}><label>Nota da alteração</label><input value={changeNote} onChange={(e) => setChangeNote(e.target.value)} placeholder="O que mudou nesta versão?" /></div>
         </div>
         {message ? <div className={styles[message.kind]}>{message.text}</div> : null}
+        {conflictVersion !== null ? <div className={styles.notice}>Conflito ativo com a versão v{conflictVersion}. O conteúdo local não foi descartado. Use “Carregar” para sincronizar antes de uma nova mutation.</div> : null}
         <div className={styles.toolbar}>
           <button className={styles.secondaryButton} disabled={busy} onClick={load}>Carregar</button>
-          <button className={styles.secondaryButton} disabled={busy} onClick={() => save("draft")}>Salvar rascunho</button>
-          <button className={styles.secondaryButton} disabled={busy} onClick={() => save("review")}>Enviar para revisão</button>
-          <button className={styles.primaryButton} disabled={busy || !item} onClick={() => transition("publish")}>Publicar</button>
-          <button className={styles.dangerButton} disabled={busy || !item} onClick={() => transition("archive")}>Arquivar</button>
+          <button className={styles.secondaryButton} disabled={busy || conflictVersion !== null} onClick={() => save("draft")}>Salvar rascunho</button>
+          <button className={styles.secondaryButton} disabled={busy || conflictVersion !== null} onClick={() => save("review")}>Enviar para revisão</button>
+          <button className={styles.primaryButton} disabled={busy || !item || conflictVersion !== null} onClick={() => transition("publish")}>Publicar</button>
+          <button className={styles.dangerButton} disabled={busy || !item || conflictVersion !== null} onClick={() => transition("archive")}>Arquivar</button>
         </div>
       </section>
 
@@ -177,7 +193,7 @@ export default function ResourceEditor({ definition }: { definition: PortalResou
             {versions.length ? versions.map((version) => <article className={styles.version} key={version.id}>
               <div className={styles.versionTop}><strong>v{version.version} · {version.status}</strong><span>{version.actor}</span></div>
               <p>{version.changeNote || "Sem nota editorial."}</p>
-              <button disabled={busy} onClick={() => rollback(version.version)}>Restaurar como rascunho →</button>
+              <button disabled={busy || conflictVersion !== null} onClick={() => rollback(version.version)}>Restaurar como rascunho →</button>
             </article>) : <p className={styles.empty}>O histórico aparecerá depois do primeiro salvamento.</p>}
           </div>
         </section>
