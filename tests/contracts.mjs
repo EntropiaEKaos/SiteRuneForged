@@ -21,6 +21,8 @@ const collectionsIndex = read("src/app/collections/page.tsx");
 const collectionDetail = read("src/app/collections/[slug]/page.tsx");
 const regionsIndex = read("src/app/regions/page.tsx");
 const regionDetail = read("src/app/regions/[region]/page.tsx");
+const fullStackWorkflow = read(".github/workflows/full-stack-integration.yml");
+const fullStackScript = read("scripts/full-stack-integration.mjs");
 
 assert.match(editor, /const expectedVersion = item\?\.version \?\? 0/);
 assert.ok((editor.match(/expectedVersion/g) || []).length >= 5, "all create/update/lifecycle mutations must carry expectedVersion");
@@ -103,4 +105,15 @@ assert.match(regionDetail, /notFound/);
 assert.ok(fs.existsSync("src/app/regions/page.tsx"));
 assert.ok(fs.existsSync("src/app/regions/[region]/page.tsx"));
 
-console.log("PORTAL CONTRACT: PASS — CMS 2.1 · live cards/collections · CMS-driven regions with live counts · no duplicate game authority");
+assert.match(fullStackWorkflow, /EntropiaEKaos\/RuneForgedTCG/);
+assert.match(fullStackWorkflow, /RUNEFORGE_BACKEND_REF:\s*[0-9a-f]{40}/);
+assert.match(fullStackWorkflow, /postgres:17-alpine/);
+assert.match(fullStackWorkflow, /RUNEFORGE_API_URL=http:\/\/127\.0\.0\.1:3001/);
+assert.match(fullStackWorkflow, /full-stack-integration\.mjs/);
+assert.match(fullStackScript, /collection cardCount must equal the public card catalog projection/);
+assert.match(fullStackScript, /\.catalog-card/);
+assert.match(fullStackScript, /\.collection-card-live/);
+assert.match(fullStackScript, /\.region-live-card/);
+assert.match(fullStackScript, /integration-evidence/);
+
+console.log("PORTAL CONTRACT: PASS — CMS 2.1 · live cards/collections/regions · pinned cross-repo integration gate · no duplicate game authority");
