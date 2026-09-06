@@ -1,4 +1,4 @@
-import type { CardShowcaseContent, HomeContent, NavigationContent, RegionShowcaseContent } from "./content-model";
+import type { AlphaLaunchContent, CardShowcaseContent, HomeContent, NavigationContent, RegionShowcaseContent } from "./content-model";
 
 export const defaultNavigation: NavigationContent = {
   brandSubtitle: "Tactical Card Game",
@@ -10,8 +10,8 @@ export const defaultNavigation: NavigationContent = {
     { label: "Lore", href: "/lore" },
     { label: "Notícias", href: "/news" },
   ],
-  cta: { label: "Entrar na forja", href: "#alpha" },
-  footerLabel: "Portal oficial • Conteúdo v0.3",
+  cta: { label: "Jogar Alpha", href: "/alpha" },
+  footerLabel: "Portal oficial • Alpha v1.0",
   footerTagline: "Forge your legend.",
   copyright: "© 2026 RuneForge",
 };
@@ -48,10 +48,10 @@ export const defaultHome: HomeContent = {
     cta: { label: "Explorar as regras", href: "/rules" },
   },
   alpha: {
-    label: "ALPHA EM CONSTRUÇÃO",
+    label: "ALPHA JOGÁVEL",
     title: "A forja já está acesa.",
-    description: "O portal público acompanhará o jogo com cartas, regras, coleções, novidades e acesso à experiência RuneForge.",
-    cta: { label: "Voltar ao topo", href: "#top" },
+    description: "Entre no hub do Alpha para consultar disponibilidade, escopo certificado e acesso ao jogo em tempo real.",
+    cta: { label: "Abrir Alpha", href: "/alpha" },
   },
 };
 
@@ -76,4 +76,29 @@ export const defaultRegionsHome: RegionShowcaseContent = {
     { name: "Tidecall", description: "Marés, controle e poder que cresce como o oceano.", icon: "https://raw.githubusercontent.com/EntropiaEKaos/RuneForgedTCG/main/public/art/regions/tidecall.svg", href: "/regions/tidecall" },
     { name: "Voidborn", description: "O vazio responde a quem ousa pagar o preço.", icon: "https://raw.githubusercontent.com/EntropiaEKaos/RuneForgedTCG/main/public/art/regions/voidborn.svg", href: "/regions/voidborn" },
   ],
+};
+
+
+export const defaultAlphaLaunch: AlphaLaunchContent = {
+  eyebrow: "ALPHA JOGÁVEL · STATUS AO VIVO",
+  title: "Entre na forja.",
+  description: "O Alpha público reúne a jornada já certificada do RuneForge: primeiro acesso, deck, mulligan, PvE, Forge, progressão e PvP Casual. A disponibilidade abaixo vem diretamente do runtime do jogo.",
+  playLabel: "Jogar RuneForge",
+  rulesLabel: "Ler regras antes",
+  journeyTitle: "O que já está na jornada",
+  journeyDescription: "Cada item abaixo faz parte do escopo jogável certificado. O status individual acompanha manutenção e disponibilidade de IA sem inventar um segundo estado no portal.",
+  notesTitle: "Antes de entrar",
+  notes: [
+    "O Alpha é um ambiente em evolução; conteúdo e balanceamento podem mudar.",
+    "Decks, recompensas e progressão fazem parte da jornada persistida certificada.",
+    "PvP Casual faz parte do Alpha. Ranked público não é requisito deste lançamento.",
+  ],
+  boundariesTitle: "Fronteira do Alpha",
+  boundariesDescription: "Alguns sistemas existem no projeto, mas não são requisito para abrir este Alpha a jogadores externos.",
+  home: {
+    label: "ALPHA JOGÁVEL",
+    title: "A forja está aberta para testes.",
+    description: "Consulte o status real do runtime, veja o que já está certificado e entre na experiência RuneForge.",
+    ctaLabel: "Abrir Alpha Hub",
+  },
 };

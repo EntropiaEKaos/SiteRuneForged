@@ -73,6 +73,17 @@ for (const contract of rules.all) {
   assert.equal("mechanics" in contract, false, "rules DTO must not expose mechanics AST");
 }
 
+const alpha = await json("/api/public/game/alpha/readiness");
+assert.equal(alpha.ok, true);
+assert.equal(alpha.readiness.alpha, "playable");
+assert.equal(alpha.readiness.state, "ready", "fresh certified integration runtime must expose ready Alpha state");
+assert.equal(alpha.readiness.entryRoute, "/play");
+assert.equal(alpha.readiness.capabilities.length, 7, "certified Alpha scope must expose seven capabilities");
+assert.ok(alpha.readiness.capabilities.every((item) => item.status === "available"), "fresh integration runtime must expose all Alpha capabilities");
+assert.equal(alpha.readiness.boundaries.rankedPublicLaunchRequirement, false);
+assert.equal(alpha.readiness.boundaries.realMoneyPaymentsLaunchRequirement, false);
+assert.equal(alpha.readiness.boundaries.largeScaleLiveOpsLaunchRequirement, false);
+
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } });
 
@@ -138,10 +149,19 @@ try {
   assert.ok(await page.getByText("Armadilha", { exact: true }).count() > 0);
   assert.ok(await page.getByText("Estrutura", { exact: true }).count() > 0);
   await page.screenshot({ path: `${evidenceDir}/live-rules-intelligence.png`, fullPage: true });
+
+  await page.goto(`${site}/alpha`, { waitUntil: "networkidle" });
+  assert.match(await page.locator("h1").innerText(), /Entre na forja/i);
+  assert.equal(await page.locator(".alpha-runtime-ready").count(), 1, "Alpha launch hub must show the live ready runtime");
+  assert.equal(await page.locator(".alpha-capability-card").count(), 7, "Alpha launch hub must render seven certified capabilities");
+  assert.equal(await page.locator(".alpha-readiness-unavailable").count(), 0);
+  assert.equal(await page.locator(".alpha-boundary-grid article").count(), 3);
+  assert.equal(await page.locator(".alpha-play-cta").getAttribute("href"), `${backend}/play`);
+  await page.screenshot({ path: `${evidenceDir}/live-alpha-launch.png`, fullPage: true });
 } finally {
   await browser.close();
 }
 
 console.log(
-  `FULL STACK INTEGRATION: PASS — backend ${backend} · site ${site} · Vanilla ${vanilla.cardCount} public cards · card ${firstCard.defId} · collections · regions · ${keywords.items.length} keywords · exact keyword ${liveKeyword.key} · 6 structural rules + 3 semantic rules`,
+  `FULL STACK INTEGRATION: PASS — backend ${backend} · site ${site} · Vanilla ${vanilla.cardCount} public cards · card ${firstCard.defId} · collections · regions · ${keywords.items.length} keywords · exact keyword ${liveKeyword.key} · 6 structural rules + 3 semantic rules · Alpha ${alpha.readiness.state} with ${alpha.readiness.capabilities.length} capabilities`,
 );

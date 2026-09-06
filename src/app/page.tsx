@@ -1,13 +1,14 @@
-import { defaultCardsHome, defaultHome, defaultNavigation, defaultRegionsHome } from "@/lib/cms/defaults";
+import { defaultAlphaLaunch, defaultCardsHome, defaultHome, defaultNavigation, defaultRegionsHome } from "@/lib/cms/defaults";
 import { getPublishedContent } from "@/lib/cms/public-content";
-import type { CardShowcaseContent, HomeContent, NavigationContent, RegionShowcaseContent } from "@/lib/cms/content-model";
+import type { AlphaLaunchContent, CardShowcaseContent, HomeContent, NavigationContent, RegionShowcaseContent } from "@/lib/cms/content-model";
 
 export default async function HomePage() {
-  const [home, navigation, cards, regions] = await Promise.all([
+  const [home, navigation, cards, regions, alpha] = await Promise.all([
     getPublishedContent<HomeContent>("home", "main", defaultHome),
     getPublishedContent<NavigationContent>("navigation", "main", defaultNavigation),
     getPublishedContent<CardShowcaseContent>("cards", "home", defaultCardsHome),
     getPublishedContent<RegionShowcaseContent>("regions", "home", defaultRegionsHome),
+    getPublishedContent<AlphaLaunchContent>("alpha", "main", defaultAlphaLaunch),
   ]);
 
   return (
@@ -65,7 +66,7 @@ export default async function HomePage() {
       </section>
 
       <section className="section alpha" id="alpha">
-        <div className="alpha-panel"><div><span className="live-dot"/> {home.alpha.label}</div><h2>{home.alpha.title}</h2><p>{home.alpha.description}</p><a className="primary" href={home.alpha.cta.href}>{home.alpha.cta.label}</a></div>
+        <div className="alpha-panel"><div><span className="live-dot"/> {alpha.home.label}</div><h2>{alpha.home.title}</h2><p>{alpha.home.description}</p><a className="primary" href="/alpha">{alpha.home.ctaLabel}</a></div>
       </section>
 
       <footer><div className="footer-brand"><span className="brand-mark small"><span>RF</span></span><div><strong>RuneForge</strong><small>{navigation.footerTagline}</small></div></div><span>{navigation.footerLabel}</span><span>{navigation.copyright}</span></footer>
