@@ -76,7 +76,7 @@ jobs:
 
       - name: Install portal
         working-directory: portal
-        run: npm install
+        run: npm run ci:install
 
       - name: Install Chromium
         working-directory: portal
