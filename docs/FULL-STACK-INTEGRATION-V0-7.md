@@ -21,7 +21,7 @@ This is deliberate:
 - adopting a new backend contract is an explicit reviewed change;
 - a backend `main` movement cannot silently change an already-certified portal PR.
 
-A draft PR may temporarily pin the fully-tested #139 candidate head to exercise the integration infrastructure early. Before the PR is marked ready or merged, the pin must be updated to the definitive post-merge SHA containing Public Collection Count Consistency (#139).
+The workflow is now pinned to the definitive post-merge RuneForgedTCG SHA containing Public Collection Count Consistency (#139): `6b8946929b598c7b4b39d6ce43ba181335665566`.
 
 ## Data certification
 
