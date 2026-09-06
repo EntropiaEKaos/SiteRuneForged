@@ -2,6 +2,10 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const read = (path) => fs.readFileSync(path, "utf8");
+const packageJson = JSON.parse(read("package.json"));
+const packageLock = JSON.parse(read("package-lock.json"));
+const nvmrc = read(".nvmrc").trim();
+const webWorkflow = read(".github/workflows/ci.yml");
 
 const editor = read("src/app/admin/[resource]/ResourceEditor.tsx");
 const proxy = read("src/app/api/portal-admin/site/[...path]/route.ts");
@@ -37,6 +41,7 @@ const fullStackWorkflow = read(".github/workflows/full-stack-integration.yml");
 const fullStackScript = read("scripts/full-stack-integration.mjs");
 const productionSmokeWorkflow = read(".github/workflows/production-alpha-smoke.yml");
 const productionSmokeScript = read("scripts/production-alpha-smoke.mjs");
+const adminResourcePage = read("src/app/admin/[resource]/page.tsx");
 
 assert.match(editor, /const expectedVersion = item\?\.version \?\? 0/);
 assert.ok((editor.match(/expectedVersion/g) || []).length >= 5, "all create/update/lifecycle mutations must carry expectedVersion");
@@ -257,4 +262,61 @@ assert.match(fullStackWorkflow, /RUNEFORGE_SMOKE_EXPECTED_GAME_SHA="\$RUNEFORGE_
 assert.match(fullStackWorkflow, /node scripts\/production-alpha-smoke\.mjs/);
 assert.match(fullStackWorkflow, /integration-evidence\/production-smoke/);
 
-console.log("PORTAL CONTRACT: PASS — CMS 2.1 · live cards/collections/regions/keywords/rules/alpha · exact build provenance · pinned cross-repo integration · production smoke gate · no duplicate game authority");
+
+// Runtime and dependency reproducibility.
+assert.equal(packageJson.engines?.node, "22.23.x");
+assert.equal(packageJson.scripts?.["ci:install"], "npm ci --no-audit --no-fund");
+assert.equal(nvmrc, "22.23.2");
+assert.equal(packageJson.dependencies?.next, "15.5.25");
+assert.equal(packageJson.dependencies?.react, "19.2.8");
+assert.equal(packageJson.dependencies?.["react-dom"], "19.2.8");
+assert.equal(packageJson.devDependencies?.["@playwright/test"], "1.63.0");
+assert.equal(packageLock.lockfileVersion, 3);
+assert.equal(packageLock.packages?.[""]?.dependencies?.next, packageJson.dependencies.next);
+assert.equal(packageLock.packages?.[""]?.dependencies?.react, packageJson.dependencies.react);
+assert.equal(packageLock.packages?.[""]?.dependencies?.["react-dom"], packageJson.dependencies["react-dom"]);
+assert.equal(packageLock.packages?.[""]?.devDependencies?.["@playwright/test"], packageJson.devDependencies["@playwright/test"]);
+assert.equal(packageLock.packages?.["node_modules/next"]?.version, "15.5.25");
+assert.equal(packageLock.packages?.["node_modules/react"]?.version, "19.2.8");
+assert.equal(packageLock.packages?.["node_modules/react-dom"]?.version, "19.2.8");
+assert.equal(packageLock.packages?.["node_modules/@playwright/test"]?.version, "1.63.0");
+assert.equal(fs.existsSync(".github/workflows/lockfile-bootstrap.yml"), false, "temporary lockfile bootstrap must never ship");
+
+assert.match(webWorkflow, /runs-on:\s*ubuntu-24\.04/);
+assert.match(webWorkflow, /node-version:\s*22\.23\.2/);
+assert.match(webWorkflow, /npm run ci:install/);
+assert.doesNotMatch(webWorkflow, /npm install(?:\s|$)/);
+
+assert.match(fullStackWorkflow, /node-version:\s*22\.23\.2/);
+assert.match(fullStackWorkflow, /working-directory:\s*portal\s*\n\s*run:\s*npm run ci:install/);
+assert.doesNotMatch(fullStackWorkflow, /working-directory:\s*portal\s*\n\s*run:\s*npm install/);
+
+assert.match(productionSmokeWorkflow, /node-version:\s*22\.23\.2/);
+assert.match(productionSmokeWorkflow, /Install portal test runtime[\s\S]*?npm run ci:install/);
+assert.doesNotMatch(productionSmokeWorkflow, /npm install(?:\s|$)/);
+
+// Next 15 App Router request APIs remain async.
+const asyncParamRoutes = [
+  "src/app/admin/[resource]/page.tsx",
+  "src/app/cards/[defId]/page.tsx",
+  "src/app/collections/[slug]/page.tsx",
+  "src/app/events/[slug]/page.tsx",
+  "src/app/keywords/[key]/page.tsx",
+  "src/app/lore/[slug]/page.tsx",
+  "src/app/news/[slug]/page.tsx",
+  "src/app/regions/[region]/page.tsx",
+  "src/app/roadmap/[slug]/page.tsx",
+  "src/app/rules/[slug]/page.tsx",
+];
+for (const route of asyncParamRoutes) {
+  const source = read(route);
+  assert.match(source, /params:\s*Promise</, `${route} must use async params on Next 15`);
+  assert.match(source, /await params/, `${route} must await params on Next 15`);
+}
+assert.match(cardsIndex, /searchParams\?:\s*Promise<Search>/);
+assert.match(cardsIndex, /await searchParams/);
+assert.match(proxy, /params:\s*Promise<\{ path: string\[\] \}>/);
+assert.match(proxy, /await ctx\.params/);
+assert.match(adminResourcePage, /params:\s*Promise<\{ resource: string \}>/);
+
+console.log("PORTAL CONTRACT: PASS — CMS 2.1 · live game authority · Next 15 runtime hardening · deterministic npm lock · pinned full-stack provenance · production smoke gate");
