@@ -13,15 +13,15 @@ The portal does not copy engine timing or mana rules into a second hand-maintain
 
 ## Backend dependency
 
-Candidate endpoint during draft integration:
+Public endpoint:
 
 `GET /api/public/game/rules/contracts`
 
-The draft Full Stack workflow is temporarily pinned to RuneForgedTCG PR #141 candidate head:
+The Full Stack workflow is pinned to the definitive RuneForgedTCG SHA containing Public Rules Contracts 1.0:
 
-`999cfc06cd8a135e4a051ddba9a4da1b14ed0950`
+`b599bf1901d83e6de9dca167a89a7f467167db40`
 
-Before v0.9 can leave draft / merge, this pin must be replaced by the definitive post-merge RuneForgedTCG SHA containing Public Rules Contracts 1.0.
+The portal PR remains draft until that backend SHA completes its post-merge RuneForgedTCG repository certification.
 
 ## Rules composition
 
