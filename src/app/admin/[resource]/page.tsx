@@ -3,8 +3,9 @@ import { portalResources, type PortalResourceKey } from "@/lib/cms/content-model
 import ResourceEditor from "./ResourceEditor";
 import styles from "../editor.module.css";
 
-export default function PortalResourcePage({ params }: { params: { resource: string } }) {
-  const definition = portalResources.find((entry) => entry.key === params.resource as PortalResourceKey);
+export default async function PortalResourcePage({ params }: { params: Promise<{ resource: string }> }) {
+  const { resource } = await params;
+  const definition = portalResources.find((entry) => entry.key === resource as PortalResourceKey);
   if (!definition) notFound();
 
   return (
