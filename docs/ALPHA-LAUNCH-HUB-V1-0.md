@@ -148,4 +148,4 @@ The cross-repository gate pins an explicit RuneForgedTCG SHA and requires:
 - play CTA resolving to the configured RuneForgedTCG `/play` route;
 - screenshot evidence.
 
-The portal PR must remain draft until Public Alpha Readiness 1.0 is merged and post-merge certified, after which the integration pin must be updated to the definitive backend SHA.
+Public Alpha Readiness 1.0 is merged and post-merge certified. The definitive integration pin is `babcece0d8446c84ffcae4e8c08438e30807e786`.
