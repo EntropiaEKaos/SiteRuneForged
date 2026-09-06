@@ -145,7 +145,7 @@ assert.match(rulesCss, /rule-contract-card/);
 assert.ok(fs.existsSync("src/app/rules/rules-intelligence.css"));
 
 assert.match(fullStackWorkflow, /EntropiaEKaos\/RuneForgedTCG/);
-assert.match(fullStackWorkflow, /RUNEFORGE_BACKEND_REF:\s*999cfc06cd8a135e4a051ddba9a4da1b14ed0950/);
+assert.match(fullStackWorkflow, /RUNEFORGE_BACKEND_REF:\s*b599bf1901d83e6de9dca167a89a7f467167db40/);
 assert.match(fullStackWorkflow, /postgres:17-alpine/);
 assert.match(fullStackWorkflow, /RUNEFORGE_API_URL=http:\/\/127\.0\.0\.1:3001/);
 assert.match(fullStackWorkflow, /full-stack-integration\.mjs/);
