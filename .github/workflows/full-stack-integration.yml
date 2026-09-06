@@ -33,7 +33,7 @@ jobs:
           --health-retries 30
 
     env:
-      RUNEFORGE_BACKEND_REF: b61364ad51c7886cdad1183eec665068570672fc
+      RUNEFORGE_BACKEND_REF: 954873e9124913de684a0fc6bb5458aa494f46ba
       DATABASE_URL: postgresql://runeforge:runeforge_integration_only@localhost:5432/runeforge_integration
       RANKED_RELEASE_CERTIFIED: "false"
 
