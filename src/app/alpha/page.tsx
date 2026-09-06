@@ -9,6 +9,7 @@ import {
   type DeploymentVerification,
 } from "@/lib/alpha/public-deployment";
 import { getRuneForgeGameHref } from "@/lib/runeforge-api/public-origin";
+import { getPortalDeploymentProvenance } from "@/lib/portal/deployment-provenance";
 import "./alpha-launch.css";
 
 export const metadata: Metadata = {
@@ -90,6 +91,7 @@ function boundaryItems(rankedOperational: boolean) {
 }
 
 export default async function AlphaPage() {
+  const portalDeployment = getPortalDeploymentProvenance();
   const [copy, readiness, provenance] = await Promise.all([
     getPublishedContent<AlphaLaunchContent>("alpha", "main", defaultAlphaLaunch),
     getPublicAlphaReadiness(),
@@ -179,6 +181,8 @@ export default async function AlphaPage() {
           className="alpha-release-panel"
           data-deploy-sha={deployment?.commitSha || ""}
           data-deploy-verification={provenance.verification}
+          data-portal-deploy-sha={portalDeployment?.commitSha || ""}
+          data-portal-deploy-environment={portalDeployment?.environment || ""}
         >
           <span className="alpha-release-rune" aria-hidden="true">ᚱ</span>
           <small>BUILD PÚBLICO</small>
@@ -196,8 +200,10 @@ export default async function AlphaPage() {
             <div><dt>Engine</dt><dd>{engineVersion}</dd></div>
             <div><dt>Ruleset</dt><dd>{rulesetVersion}</dd></div>
             <div><dt>Content</dt><dd>{contentVersion}</dd></div>
-            <div><dt>Commit</dt><dd>{deployment?.commitSha || "—"}</dd></div>
-            <div><dt>Ambiente</dt><dd>{deployment?.environment || "—"}</dd></div>
+            <div><dt>Game commit</dt><dd>{deployment?.commitSha || "—"}</dd></div>
+            <div><dt>Game env</dt><dd>{deployment?.environment || "—"}</dd></div>
+            <div><dt>Portal commit</dt><dd>{portalDeployment?.commitSha || "—"}</dd></div>
+            <div><dt>Portal env</dt><dd>{portalDeployment?.environment || "—"}</dd></div>
             {provenance.verification === "mismatch" && provenance.expectedSha ? (
               <div><dt>Esperado</dt><dd>{provenance.expectedSha}</dd></div>
             ) : null}
