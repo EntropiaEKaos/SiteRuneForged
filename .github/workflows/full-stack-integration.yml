@@ -129,6 +129,14 @@ jobs:
           RUNEFORGE_INTEGRATION_EXPECTED_SHA="$RUNEFORGE_BACKEND_REF" \
           node scripts/full-stack-integration.mjs
 
+          RUNEFORGE_SMOKE_SITE_URL=http://127.0.0.1:3000 \
+          RUNEFORGE_SMOKE_GAME_URL=http://127.0.0.1:3001 \
+          RUNEFORGE_SMOKE_EXPECTED_GAME_SHA="$RUNEFORGE_BACKEND_REF" \
+          RUNEFORGE_SMOKE_EXPECTED_ENV=alpha \
+          RUNEFORGE_SMOKE_ALLOW_HTTP=true \
+          RUNEFORGE_SMOKE_EVIDENCE_DIR=integration-evidence/production-smoke \
+          node scripts/production-alpha-smoke.mjs
+
       - name: Upload full-stack evidence
         if: always()
         uses: actions/upload-artifact@v4
