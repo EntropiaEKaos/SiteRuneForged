@@ -4,7 +4,7 @@ export const defaultNavigation: NavigationContent = {
   brandSubtitle: "Tactical Card Game",
   links: [
     { label: "Cartas", href: "/cards" },
-    { label: "Regiões", href: "#regions" },
+    { label: "Regiões", href: "/regions" },
     { label: "Regras", href: "/rules" },
     { label: "Lore", href: "/lore" },
     { label: "Notícias", href: "/news" },
@@ -68,11 +68,11 @@ export const defaultRegionsHome: RegionShowcaseContent = {
   title: "Seis regiões.\nSeis formas de vencer.",
   description: "Cada região carrega uma filosofia própria de combate, identidade visual e linguagem estratégica.",
   items: [
-    { name: "Emberhold", description: "Chamas, aço e ambição moldam cada confronto.", icon: "https://raw.githubusercontent.com/EntropiaEKaos/RuneForgedTCG/main/public/art/regions/emberhold.svg", href: "#rules" },
-    { name: "Florestia", description: "Vida ancestral, crescimento e força que nunca cessa.", icon: "https://raw.githubusercontent.com/EntropiaEKaos/RuneForgedTCG/main/public/art/regions/florestia.svg", href: "#rules" },
-    { name: "Ironwood", description: "Disciplina, máquinas e resistência acima de tudo.", icon: "https://raw.githubusercontent.com/EntropiaEKaos/RuneForgedTCG/main/public/art/regions/ironwood.svg", href: "#rules" },
-    { name: "Tempestade", description: "Velocidade, relâmpagos e domínio do ritmo da batalha.", icon: "https://raw.githubusercontent.com/EntropiaEKaos/RuneForgedTCG/main/public/art/regions/tempestade.svg", href: "#rules" },
-    { name: "Tidecall", description: "Marés, controle e poder que cresce como o oceano.", icon: "https://raw.githubusercontent.com/EntropiaEKaos/RuneForgedTCG/main/public/art/regions/tidecall.svg", href: "#rules" },
-    { name: "Voidborn", description: "O vazio responde a quem ousa pagar o preço.", icon: "https://raw.githubusercontent.com/EntropiaEKaos/RuneForgedTCG/main/public/art/regions/voidborn.svg", href: "#rules" },
+    { name: "Emberhold", description: "Chamas, aço e ambição moldam cada confronto.", icon: "https://raw.githubusercontent.com/EntropiaEKaos/RuneForgedTCG/main/public/art/regions/emberhold.svg", href: "/regions/emberhold" },
+    { name: "Florestia", description: "Vida ancestral, crescimento e força que nunca cessa.", icon: "https://raw.githubusercontent.com/EntropiaEKaos/RuneForgedTCG/main/public/art/regions/florestia.svg", href: "/regions/florestia" },
+    { name: "Ironwood", description: "Disciplina, máquinas e resistência acima de tudo.", icon: "https://raw.githubusercontent.com/EntropiaEKaos/RuneForgedTCG/main/public/art/regions/ironwood.svg", href: "/regions/ironwood" },
+    { name: "Tempestade", description: "Velocidade, relâmpagos e domínio do ritmo da batalha.", icon: "https://raw.githubusercontent.com/EntropiaEKaos/RuneForgedTCG/main/public/art/regions/tempestade.svg", href: "/regions/tempestade" },
+    { name: "Tidecall", description: "Marés, controle e poder que cresce como o oceano.", icon: "https://raw.githubusercontent.com/EntropiaEKaos/RuneForgedTCG/main/public/art/regions/tidecall.svg", href: "/regions/tidecall" },
+    { name: "Voidborn", description: "O vazio responde a quem ousa pagar o preço.", icon: "https://raw.githubusercontent.com/EntropiaEKaos/RuneForgedTCG/main/public/art/regions/voidborn.svg", href: "/regions/voidborn" },
   ],
 };
