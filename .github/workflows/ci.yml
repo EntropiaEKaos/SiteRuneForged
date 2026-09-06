@@ -18,6 +18,13 @@ jobs:
           node-version: 22.23.2
       - run: npm run ci:install
       - run: npm run contract:test
+      - name: Certify Vercel system identity fallback
+        env:
+          RUNEFORGE_PORTAL_DEPLOY_SHA: ""
+          RUNEFORGE_PORTAL_DEPLOY_ENV: ""
+          VERCEL_GIT_COMMIT_SHA: ${{ github.sha }}
+          VERCEL_ENV: preview
+        run: npm run release:preflight
       - run: npm run typecheck
       - run: npm run production:build
       - run: npx playwright install --with-deps chromium
