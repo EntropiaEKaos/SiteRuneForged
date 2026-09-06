@@ -15,7 +15,7 @@ export default async function CardDetailPage({ params }: { params: { defId: stri
     );
   }
 
-  const keywords = [...card.keywords, ...card.customKeywords];
+  const keywords = [...new Set([...card.keywords, ...card.customKeywords])];
 
   return (
     <main className="catalog-shell card-detail-shell">
