@@ -1,3 +1,4 @@
+import "./rules-intelligence.css";
 import Link from "next/link";
 import { getPublishedList } from "@/lib/cms/public-content";
 import { publicSections, type EditorialPayload } from "@/lib/cms/public-sections";
