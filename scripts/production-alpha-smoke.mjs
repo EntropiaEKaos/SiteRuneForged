@@ -3,8 +3,8 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { chromium } from "@playwright/test";
 
-const siteUrl = normalizeOrigin(process.env.RUNEFORGE_SMOKE_SITE_URL, "RUNEFORGE_SMOKE_SITE_URL");
-const gameUrl = normalizeOrigin(process.env.RUNEFORGE_SMOKE_GAME_URL, "RUNEFORGE_SMOKE_GAME_URL");
+let siteUrl = null;
+let gameUrl = null;
 const expectedGameSha = (process.env.RUNEFORGE_SMOKE_EXPECTED_GAME_SHA || "").trim().toLowerCase();
 const expectedEnvironment = (process.env.RUNEFORGE_SMOKE_EXPECTED_ENV || "alpha").trim().toLowerCase();
 const allowHttp = process.env.RUNEFORGE_SMOKE_ALLOW_HTTP === "true";
@@ -82,6 +82,9 @@ function versionTuple(value) {
 
 async function run() {
   await fs.mkdir(evidenceDir, { recursive: true });
+
+  siteUrl = normalizeOrigin(process.env.RUNEFORGE_SMOKE_SITE_URL, "RUNEFORGE_SMOKE_SITE_URL");
+  gameUrl = normalizeOrigin(process.env.RUNEFORGE_SMOKE_GAME_URL, "RUNEFORGE_SMOKE_GAME_URL");
 
   assert.match(expectedGameSha, /^[0-9a-f]{40}$/, "RUNEFORGE_SMOKE_EXPECTED_GAME_SHA must be an exact 40-character Git SHA");
   assert.ok(
@@ -199,8 +202,8 @@ run().catch(async (error) => {
     gate: "Production Alpha Smoke 1.0",
     passed: false,
     generatedAt: new Date().toISOString(),
-    siteUrl: typeof siteUrl === "string" ? siteUrl : null,
-    gameUrl: typeof gameUrl === "string" ? gameUrl : null,
+    siteUrl,
+    gameUrl,
     expectedGameSha: expectedGameSha || null,
     expectedEnvironment: expectedEnvironment || null,
     error: message,
