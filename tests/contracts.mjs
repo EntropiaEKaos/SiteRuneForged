@@ -6,6 +6,7 @@ const packageJson = JSON.parse(read("package.json"));
 const packageLock = JSON.parse(read("package-lock.json"));
 const nvmrc = read(".nvmrc").trim();
 const webWorkflow = read(".github/workflows/ci.yml");
+const vercelConfig = JSON.parse(read("vercel.json"));
 
 const editor = read("src/app/admin/[resource]/ResourceEditor.tsx");
 const proxy = read("src/app/api/portal-admin/site/[...path]/route.ts");
@@ -310,6 +311,9 @@ assert.match(webWorkflow, /npm run ci:install/);
 assert.match(webWorkflow, /RUNEFORGE_PORTAL_DEPLOY_SHA:\s*\$\{\{ github\.sha \}\}/);
 assert.match(webWorkflow, /RUNEFORGE_PORTAL_DEPLOY_ENV:\s*ci/);
 assert.match(webWorkflow, /npm run production:build/);
+assert.match(webWorkflow, /VERCEL_GIT_COMMIT_SHA:\s*\$\{\{ github\.sha \}\}/);
+assert.match(webWorkflow, /VERCEL_ENV:\s*preview/);
+assert.match(webWorkflow, /Certify Vercel system identity fallback/);
 assert.doesNotMatch(webWorkflow, /npm install(?:\s|$)/);
 
 assert.match(fullStackWorkflow, /node-version:\s*22\.23\.2/);
@@ -349,6 +353,9 @@ assert.match(adminResourcePage, /params:\s*Promise<\{ resource: string \}>/);
 assert.match(portalDeployment, /^import "server-only";/);
 assert.match(portalDeployment, /RUNEFORGE_PORTAL_DEPLOY_SHA/);
 assert.match(portalDeployment, /RUNEFORGE_PORTAL_DEPLOY_ENV/);
+assert.match(portalDeployment, /VERCEL_GIT_COMMIT_SHA/);
+assert.match(portalDeployment, /VERCEL_ENV/);
+assert.match(portalDeployment, /vercelEnvironment/);
 assert.match(portalDeployment, /\^\[0-9a-f\]\{40\}\$/);
 assert.match(portalDeployment, /SiteRuneForged/);
 for (const environment of ["ci", "preview", "alpha", "staging", "production"]) {
@@ -365,7 +372,16 @@ assert.match(portalDeploymentRoute, /getPortalDeploymentProvenance/);
 assert.match(portalReleasePreflight, /RUNEFORGE_PORTAL_DEPLOY_SHA/);
 assert.match(portalReleasePreflight, /RUNEFORGE_PORTAL_DEPLOY_ENV/);
 assert.match(portalReleasePreflight, /GITHUB_SHA/);
+assert.match(portalReleasePreflight, /VERCEL_GIT_COMMIT_SHA/);
+assert.match(portalReleasePreflight, /VERCEL_ENV/);
+assert.match(portalReleasePreflight, /source=\$\{source\}/);
+assert.match(portalReleasePreflight, /GITHUB_SHA.*does not match VERCEL_GIT_COMMIT_SHA/);
 assert.match(portalReleasePreflight, /PORTAL RELEASE PREFLIGHT: PASS/);
 assert.match(portalReleasePreflight, /configured portal SHA/);
 
-console.log("PORTAL CONTRACT: PASS — CMS 2.1 · Next 15 deterministic runtime · dual portal/game provenance · pinned full-stack chain · Production Alpha Smoke 1.1");
+assert.equal(vercelConfig.framework, "nextjs");
+assert.equal(vercelConfig.installCommand, "npm run ci:install");
+assert.equal(vercelConfig.buildCommand, "npm run production:build");
+assert.equal(vercelConfig.$schema, "https://openapi.vercel.sh/vercel.json");
+
+console.log("PORTAL CONTRACT: PASS — CMS 2.1 · Next 15 deterministic runtime · Vercel Git identity · dual portal/game provenance · Production Alpha Smoke 1.1");
