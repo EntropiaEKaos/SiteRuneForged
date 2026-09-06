@@ -13,9 +13,9 @@ function validPath(parts: string[]) {
   return parts.every((part) => /^[A-Za-z0-9._-]{1,180}$/.test(part));
 }
 
-async function proxy(req: NextRequest, ctx: { params: { path: string[] } }) {
+async function proxy(req: NextRequest, ctx: { params: Promise<{ path: string[] }> }) {
   if (!ADMIN_API_URL) return unavailable();
-  const parts = ctx.params.path ?? [];
+  const { path: parts = [] } = await ctx.params;
   if (!validPath(parts)) return Response.json({ ok: false, error: "Invalid portal admin path" }, { status: 400 });
 
   const cookie = req.headers.get("cookie") ?? "";
