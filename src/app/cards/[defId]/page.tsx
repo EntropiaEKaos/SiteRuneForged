@@ -2,8 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPublicCard } from "@/lib/cards/public-catalog";
 
-export default async function CardDetailPage({ params }: { params: { defId: string } }) {
-  const card = await getPublicCard(params.defId);
+export default async function CardDetailPage({ params }: { params: Promise<{ defId: string }> }) {
+  const { defId } = await params;
+  const card = await getPublicCard(defId);
   if (card === null) notFound();
 
   if (card === undefined) {
