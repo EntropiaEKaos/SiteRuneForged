@@ -126,7 +126,7 @@ assert.ok(fs.existsSync("src/app/keywords/page.tsx"));
 assert.ok(fs.existsSync("src/app/keywords/[key]/page.tsx"));
 
 assert.match(fullStackWorkflow, /EntropiaEKaos\/RuneForgedTCG/);
-assert.match(fullStackWorkflow, /RUNEFORGE_BACKEND_REF:\s*[0-9a-f]{40}/);
+assert.match(fullStackWorkflow, /RUNEFORGE_BACKEND_REF:\s*3b0ec9a4a4bd20d865a947ba881420c902a2752d/);
 assert.match(fullStackWorkflow, /postgres:17-alpine/);
 assert.match(fullStackWorkflow, /RUNEFORGE_API_URL=http:\/\/127\.0\.0\.1:3001/);
 assert.match(fullStackWorkflow, /full-stack-integration\.mjs/);
