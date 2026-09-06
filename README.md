@@ -15,16 +15,17 @@ Configure no ambiente do servidor/hosting:
 ```bash
 RUNEFORGE_API_URL=https://<backend-publico-runeforge>
 RUNEFORGE_GAME_URL=https://<frontend-jogavel-runeforge>
+RUNEFORGE_EXPECTED_DEPLOY_SHA=<sha-git-certificado-de-40-caracteres>
 RUNEFORGE_ADMIN_API_URL=https://<backend-admin-runeforge>
 ```
 
-`RUNEFORGE_GAME_URL` é opcional e define a origem navegável do jogo usada pelos CTAs do Alpha; quando omitida, o portal usa a origem de `RUNEFORGE_API_URL`. `RUNEFORGE_ADMIN_API_URL` é opcional quando a API administrativa usa a mesma origem de `RUNEFORGE_API_URL`.
+`RUNEFORGE_GAME_URL` é opcional e define a origem navegável do jogo usada pelos CTAs do Alpha; quando omitida, o portal usa a origem de `RUNEFORGE_API_URL`. `RUNEFORGE_EXPECTED_DEPLOY_SHA` é opcional, mas recomendado no Alpha/Production: quando configurado, o portal só mantém os CTAs do jogo ativos se o backend ao vivo reportar exatamente esse SHA em sua provenance pública. `RUNEFORGE_ADMIN_API_URL` é opcional quando a API administrativa usa a mesma origem de `RUNEFORGE_API_URL`.
 
 Essas variáveis são **server-side**. Não use prefixo `NEXT_PUBLIC_` e não exponha credenciais administrativas no browser.
 
 ### Vercel
 
-Em **Project Settings → Environment Variables**, defina `RUNEFORGE_API_URL` para Preview e Production. Se o frontend jogável estiver em outra origem, defina `RUNEFORGE_GAME_URL`. Se a origem administrativa for diferente, defina também `RUNEFORGE_ADMIN_API_URL`.
+Em **Project Settings → Environment Variables**, defina `RUNEFORGE_API_URL` para Preview e Production. Se o frontend jogável estiver em outra origem, defina `RUNEFORGE_GAME_URL`. Para um deploy Alpha/Production rastreável, defina também `RUNEFORGE_EXPECTED_DEPLOY_SHA` com o commit exato já certificado do RuneForgedTCG. Se a origem administrativa for diferente, defina `RUNEFORGE_ADMIN_API_URL`.
 
 Depois de alterar variáveis, faça um novo deployment para que Server Components e BFF usem a configuração atual.
 
@@ -38,6 +39,7 @@ O portal consome APIs publicadas do RuneForgedTCG:
 - Keyword Codex: `/api/public/game/keywords`
 - Rules Contracts: `/api/public/game/rules/contracts`
 - Alpha readiness: `/api/public/game/alpha/readiness`
+- Deployment provenance: `/api/public/game/deployment/provenance`
 
 Quando a API pública está tecnicamente indisponível, páginas editoriais podem usar fallback editorial explicitamente definido. O catálogo de cartas **não** usa uma cópia fallback: ele mostra indisponibilidade para preservar a fonte de verdade única.
 
@@ -55,6 +57,9 @@ O GitHub Actions executa:
 2. TypeScript typecheck;
 3. build de produção;
 4. Chromium visual E2E em desktop e mobile;
-5. upload das evidências visuais.
+5. upload das evidências visuais;
+6. certificação full-stack contra um SHA exato do RuneForgedTCG, incluindo comparação da provenance ao vivo com o SHA esperado pelo portal.
+
+O Launch Hub mostra o SHA completo e o ambiente do runtime. Quando `RUNEFORGE_EXPECTED_DEPLOY_SHA` está configurado, divergência, provenance indisponível ou pin inválido bloqueiam os CTAs do jogo. Veja `docs/ALPHA_BUILD_PROVENANCE.md`.
 
 Documentação adicional está em `docs/`.

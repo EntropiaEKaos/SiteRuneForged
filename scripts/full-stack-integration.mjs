@@ -4,7 +4,10 @@ import { chromium } from "@playwright/test";
 
 const backend = process.env.RUNEFORGE_INTEGRATION_BACKEND_URL || "http://127.0.0.1:3001";
 const site = process.env.RUNEFORGE_INTEGRATION_SITE_URL || "http://127.0.0.1:3000";
+const expectedBackendSha = (process.env.RUNEFORGE_INTEGRATION_EXPECTED_SHA || "").toLowerCase();
 const evidenceDir = "integration-evidence";
+
+assert.match(expectedBackendSha, /^[0-9a-f]{40}$/, "cross-repository certification requires the exact 40-character backend SHA");
 
 async function json(path) {
   const response = await fetch(backend + path, { headers: { Accept: "application/json" } });
@@ -84,6 +87,21 @@ assert.equal(alpha.readiness.boundaries.rankedPublicLaunchRequirement, false);
 assert.equal(alpha.readiness.boundaries.realMoneyPaymentsLaunchRequirement, false);
 assert.equal(alpha.readiness.boundaries.largeScaleLiveOpsLaunchRequirement, false);
 
+const provenance = await json("/api/public/game/deployment/provenance");
+assert.equal(provenance.ok, true);
+assert.equal(provenance.deployment.schemaVersion, 1);
+assert.equal(
+  provenance.deployment.commitSha,
+  expectedBackendSha,
+  "backend provenance must report the exact certified backend SHA",
+);
+assert.equal(provenance.deployment.commitShort, expectedBackendSha.slice(0, 12));
+assert.equal(provenance.deployment.environment, "alpha");
+assert.equal(provenance.deployment.release, alpha.readiness.release.release);
+assert.equal(provenance.deployment.engineVersion, alpha.readiness.release.engineVersion);
+assert.equal(provenance.deployment.rulesetVersion, alpha.readiness.release.rulesetVersion);
+assert.equal(provenance.deployment.contentVersion, alpha.readiness.release.contentVersion);
+
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } });
 
@@ -156,6 +174,20 @@ try {
   assert.equal(await page.locator(".alpha-capability-card").count(), 7, "Alpha launch hub must render seven certified capabilities");
   assert.equal(await page.locator(".alpha-readiness-unavailable").count(), 0);
   assert.equal(await page.locator(".alpha-boundary-grid article").count(), 3);
+  assert.equal(await page.locator(".alpha-build-verified").count(), 1, "portal must mark the pinned live backend SHA as certified");
+  assert.equal(
+    await page.locator(".alpha-release-panel").getAttribute("data-deploy-sha"),
+    expectedBackendSha,
+    "portal must render the exact backend SHA returned by provenance",
+  );
+  assert.equal(
+    await page.locator(".alpha-release-panel").getAttribute("data-deploy-verification"),
+    "verified",
+  );
+  assert.ok(
+    (await page.locator(".alpha-release-panel").innerText()).includes(expectedBackendSha),
+    "full 40-character backend SHA must be visible in the public build panel",
+  );
   assert.equal(await page.locator(".alpha-play-cta").getAttribute("href"), `${backend}/play`);
   await page.screenshot({ path: `${evidenceDir}/live-alpha-launch.png`, fullPage: true });
 } finally {
@@ -163,5 +195,5 @@ try {
 }
 
 console.log(
-  `FULL STACK INTEGRATION: PASS — backend ${backend} · site ${site} · Vanilla ${vanilla.cardCount} public cards · card ${firstCard.defId} · collections · regions · ${keywords.items.length} keywords · exact keyword ${liveKeyword.key} · 6 structural rules + 3 semantic rules · Alpha ${alpha.readiness.state} with ${alpha.readiness.capabilities.length} capabilities`,
+  `FULL STACK INTEGRATION: PASS — backend ${backend} · site ${site} · Vanilla ${vanilla.cardCount} public cards · card ${firstCard.defId} · collections · regions · ${keywords.items.length} keywords · exact keyword ${liveKeyword.key} · 6 structural rules + 3 semantic rules · Alpha ${alpha.readiness.state} with ${alpha.readiness.capabilities.length} capabilities · provenance ${provenance.deployment.environment}@${provenance.deployment.commitShort}`,
 );

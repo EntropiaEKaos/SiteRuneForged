@@ -33,7 +33,10 @@ jobs:
           --health-retries 30
 
     env:
-      RUNEFORGE_BACKEND_REF: babcece0d8446c84ffcae4e8c08438e30807e786
+      RUNEFORGE_BACKEND_REF: 4028da3999c168fa43e55c967d2d9cf90d30ebb1
+      RUNEFORGE_DEPLOY_SHA: 4028da3999c168fa43e55c967d2d9cf90d30ebb1
+      RUNEFORGE_DEPLOY_ENV: alpha
+      RUNEFORGE_EXPECTED_DEPLOY_SHA: 4028da3999c168fa43e55c967d2d9cf90d30ebb1
       DATABASE_URL: postgresql://runeforge:runeforge_integration_only@localhost:5432/runeforge_integration
       RANKED_RELEASE_CERTIFIED: "false"
 
@@ -123,6 +126,7 @@ jobs:
 
           RUNEFORGE_INTEGRATION_BACKEND_URL=http://127.0.0.1:3001 \
           RUNEFORGE_INTEGRATION_SITE_URL=http://127.0.0.1:3000 \
+          RUNEFORGE_INTEGRATION_EXPECTED_SHA="$RUNEFORGE_BACKEND_REF" \
           node scripts/full-stack-integration.mjs
 
       - name: Upload full-stack evidence

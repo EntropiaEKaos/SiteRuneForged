@@ -110,6 +110,7 @@ for (const viewport of [
     await expect(page.locator("h1")).toContainText("Entre na forja");
     await expect(page.locator(".alpha-runtime-unavailable")).toContainText("STATUS INDISPONÍVEL");
     await expect(page.locator(".alpha-readiness-unavailable")).toContainText("Não foi possível carregar");
+    await expect(page.locator(".alpha-build-unavailable")).toContainText("PROVENANCE INDISPONÍVEL");
     await expect(page.locator(".alpha-boundary-grid article")).toHaveCount(3);
     await page.screenshot({ path: `visual-evidence/alpha-launch-unavailable-${viewport.name}.png`, fullPage: true });
   });
