@@ -9,7 +9,9 @@
     "typecheck": "tsc --noEmit",
     "visual:test": "playwright test",
     "contract:test": "node tests/contracts.mjs",
-    "ci:install": "npm ci --no-audit --no-fund"
+    "ci:install": "npm ci --no-audit --no-fund",
+    "release:preflight": "node scripts/portal-release-preflight.mjs",
+    "production:build": "npm run release:preflight && npm run build"
   },
   "dependencies": {
     "next": "15.5.25",
