@@ -31,6 +31,16 @@ for (const viewport of [
     await page.screenshot({ path: `visual-evidence/news-${viewport.name}.png`, fullPage: true });
   });
 
+  test(`rules intelligence resilience ${viewport.name}`, async ({ page }) => {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await page.goto("http://127.0.0.1:3000/rules", { waitUntil: "networkidle" });
+    await expect(page.locator("h1")).toContainText("Regras & Como Jogar");
+    await expect(page.locator(".rules-contract-unavailable")).toContainText("CONTRATOS DA ENGINE INDISPONÍVEIS");
+    await expect(page.locator(".rules-editorial-grid .content-card")).toHaveCount(3);
+    await expect(page.getByText("Fundamentos do duelo", { exact: true })).toBeVisible();
+    await page.screenshot({ path: `visual-evidence/rules-intelligence-resilience-${viewport.name}.png`, fullPage: true });
+  });
+
   test(`rules article visual ${viewport.name}`, async ({ page }) => {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await page.goto("http://127.0.0.1:3000/rules/fundamentos", { waitUntil: "networkidle" });

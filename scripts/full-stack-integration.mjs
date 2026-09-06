@@ -52,6 +52,27 @@ assert.equal(
   "keyword cardCount must equal exact public catalog filter",
 );
 
+const rules = await json("/api/public/game/rules/contracts");
+assert.equal(rules.ok, true);
+assert.equal(rules.version, 1);
+assert.equal(rules.structural.length, 6, "public rules must expose six structural contracts");
+assert.equal(rules.semantic.length, 3, "public rules must expose three certified semantic contracts");
+const structureRule = rules.semantic.find((item) => item.key === "structure");
+const ritualRule = rules.semantic.find((item) => item.key === "ritual");
+const trapRule = rules.semantic.find((item) => item.key === "trap");
+assert.ok(structureRule && ritualRule && trapRule, "Structure, Ritual and Trap public contracts must exist");
+assert.equal(structureRule.mana, "regular");
+assert.equal(structureRule.countsAsSpellCast, false);
+assert.equal(ritualRule.timing, "main-only");
+assert.equal(ritualRule.mana, "spell");
+assert.equal(trapRule.timing, "reaction-only");
+assert.equal(trapRule.mana, "spell");
+for (const contract of rules.all) {
+  assert.equal("spell" in contract, false, "rules DTO must not expose executable spell payload");
+  assert.equal("effect" in contract, false, "rules DTO must not expose effect graph");
+  assert.equal("mechanics" in contract, false, "rules DTO must not expose mechanics AST");
+}
+
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } });
 
@@ -107,10 +128,20 @@ try {
   assert.ok(await page.locator(".catalog-card").count() > 0, "exact keyword filter must render matching public cards");
   assert.equal(await page.locator('select[name="keyword"]').inputValue(), liveKeyword.key);
   await page.screenshot({ path: `${evidenceDir}/live-keyword-filter.png`, fullPage: true });
+
+  await page.goto(`${site}/rules`, { waitUntil: "networkidle" });
+  assert.match(await page.locator("h1").innerText(), /Regras & Como Jogar/i);
+  assert.equal(await page.locator(".rules-semantic-grid .rule-contract-card").count(), 3, "rules page must render three live semantic contracts");
+  assert.equal(await page.locator(".rules-structural-grid .rule-contract-card").count(), 6, "rules page must render six live structural contracts");
+  assert.equal(await page.locator(".rules-contract-unavailable").count(), 0, "live rules page must not show engine-contract unavailable state");
+  assert.ok(await page.getByText("Ritual", { exact: true }).count() > 0);
+  assert.ok(await page.getByText("Armadilha", { exact: true }).count() > 0);
+  assert.ok(await page.getByText("Estrutura", { exact: true }).count() > 0);
+  await page.screenshot({ path: `${evidenceDir}/live-rules-intelligence.png`, fullPage: true });
 } finally {
   await browser.close();
 }
 
 console.log(
-  `FULL STACK INTEGRATION: PASS — backend ${backend} · site ${site} · Vanilla ${vanilla.cardCount} public cards · card ${firstCard.defId} · collections · regions · ${keywords.items.length} keywords · exact keyword ${liveKeyword.key}`,
+  `FULL STACK INTEGRATION: PASS — backend ${backend} · site ${site} · Vanilla ${vanilla.cardCount} public cards · card ${firstCard.defId} · collections · regions · ${keywords.items.length} keywords · exact keyword ${liveKeyword.key} · 6 structural rules + 3 semantic rules`,
 );
