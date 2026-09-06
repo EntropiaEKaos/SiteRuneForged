@@ -173,7 +173,7 @@ assert.ok(fs.existsSync("src/app/alpha/page.tsx"));
 assert.ok(fs.existsSync("src/app/alpha/alpha-launch.css"));
 
 assert.match(fullStackWorkflow, /EntropiaEKaos\/RuneForgedTCG/);
-assert.match(fullStackWorkflow, /RUNEFORGE_BACKEND_REF:\s*b61364ad51c7886cdad1183eec665068570672fc/);
+assert.match(fullStackWorkflow, /RUNEFORGE_BACKEND_REF:\s*954873e9124913de684a0fc6bb5458aa494f46ba/);
 assert.match(fullStackWorkflow, /postgres:17-alpine/);
 assert.match(fullStackWorkflow, /RUNEFORGE_API_URL=http:\/\/127\.0\.0\.1:3001/);
 assert.match(fullStackWorkflow, /RUNEFORGE_GAME_URL=http:\/\/127\.0\.0\.1:3001/);
