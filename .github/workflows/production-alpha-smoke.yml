@@ -11,6 +11,18 @@ on:
         description: "Deployed public RuneForgedTCG/game origin"
         required: true
         type: string
+      expected_portal_sha:
+        description: "Exact certified 40-character SiteRuneForged commit SHA"
+        required: true
+        type: string
+      expected_portal_environment:
+        description: "Expected public portal deployment environment"
+        required: true
+        default: alpha
+        type: choice
+        options:
+          - alpha
+          - production
       expected_game_sha:
         description: "Exact certified 40-character RuneForgedTCG commit SHA"
         required: true
@@ -38,6 +50,8 @@ jobs:
     env:
       RUNEFORGE_SMOKE_SITE_URL: ${{ inputs.site_url }}
       RUNEFORGE_SMOKE_GAME_URL: ${{ inputs.game_url }}
+      RUNEFORGE_SMOKE_EXPECTED_PORTAL_SHA: ${{ inputs.expected_portal_sha }}
+      RUNEFORGE_SMOKE_EXPECTED_PORTAL_ENV: ${{ inputs.expected_portal_environment }}
       RUNEFORGE_SMOKE_EXPECTED_GAME_SHA: ${{ inputs.expected_game_sha }}
       RUNEFORGE_SMOKE_EXPECTED_ENV: ${{ inputs.expected_game_environment }}
       RUNEFORGE_SMOKE_EVIDENCE_DIR: production-evidence
@@ -66,7 +80,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: production-alpha-smoke-${{ inputs.expected_game_sha }}
+          name: production-alpha-smoke-${{ inputs.expected_portal_sha }}-${{ inputs.expected_game_sha }}
           path: production-evidence/
           if-no-files-found: error
           retention-days: 90

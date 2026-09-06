@@ -37,6 +37,8 @@ jobs:
       RUNEFORGE_DEPLOY_SHA: 4028da3999c168fa43e55c967d2d9cf90d30ebb1
       RUNEFORGE_DEPLOY_ENV: alpha
       RUNEFORGE_EXPECTED_DEPLOY_SHA: 4028da3999c168fa43e55c967d2d9cf90d30ebb1
+      RUNEFORGE_PORTAL_DEPLOY_SHA: ${{ github.sha }}
+      RUNEFORGE_PORTAL_DEPLOY_ENV: alpha
       DATABASE_URL: postgresql://runeforge:runeforge_integration_only@localhost:5432/runeforge_integration
       RANKED_RELEASE_CERTIFIED: "false"
 
@@ -114,7 +116,7 @@ jobs:
           export RUNEFORGE_API_URL=http://127.0.0.1:3001
           export RUNEFORGE_GAME_URL=http://127.0.0.1:3001
           export RUNEFORGE_ADMIN_API_URL=http://127.0.0.1:3001
-          npm run build
+          npm run production:build
           npm start -- -p 3000 > /tmp/runeforge-portal.log 2>&1 &
           SITE_PID=$!
 
@@ -127,12 +129,15 @@ jobs:
           RUNEFORGE_INTEGRATION_BACKEND_URL=http://127.0.0.1:3001 \
           RUNEFORGE_INTEGRATION_SITE_URL=http://127.0.0.1:3000 \
           RUNEFORGE_INTEGRATION_EXPECTED_SHA="$RUNEFORGE_BACKEND_REF" \
+          RUNEFORGE_INTEGRATION_EXPECTED_PORTAL_SHA="$RUNEFORGE_PORTAL_DEPLOY_SHA" \
           node scripts/full-stack-integration.mjs
 
           RUNEFORGE_SMOKE_SITE_URL=http://127.0.0.1:3000 \
           RUNEFORGE_SMOKE_GAME_URL=http://127.0.0.1:3001 \
           RUNEFORGE_SMOKE_EXPECTED_GAME_SHA="$RUNEFORGE_BACKEND_REF" \
           RUNEFORGE_SMOKE_EXPECTED_ENV=alpha \
+          RUNEFORGE_SMOKE_EXPECTED_PORTAL_SHA="$RUNEFORGE_PORTAL_DEPLOY_SHA" \
+          RUNEFORGE_SMOKE_EXPECTED_PORTAL_ENV=alpha \
           RUNEFORGE_SMOKE_ALLOW_HTTP=true \
           RUNEFORGE_SMOKE_EVIDENCE_DIR=integration-evidence/production-smoke \
           node scripts/production-alpha-smoke.mjs

@@ -30,6 +30,8 @@ Veja `docs/PORTAL_RUNTIME_HARDENING.md`.
 Configure no ambiente do servidor/hosting:
 
 ```bash
+RUNEFORGE_PORTAL_DEPLOY_SHA=<sha-exato-site-runeforged>
+RUNEFORGE_PORTAL_DEPLOY_ENV=<alpha|production>
 RUNEFORGE_API_URL=https://<backend-publico-runeforge>
 RUNEFORGE_GAME_URL=https://<frontend-jogavel-runeforge>
 RUNEFORGE_EXPECTED_DEPLOY_SHA=<sha-git-certificado-de-40-caracteres>
@@ -37,6 +39,8 @@ RUNEFORGE_ADMIN_API_URL=https://<backend-admin-runeforge>
 ```
 
 `RUNEFORGE_GAME_URL` é opcional e define a origem navegável do jogo usada pelos CTAs do Alpha; quando omitida, o portal usa a origem de `RUNEFORGE_API_URL`. `RUNEFORGE_EXPECTED_DEPLOY_SHA` é opcional, mas recomendado no Alpha/Production: quando configurado, o portal só mantém os CTAs do jogo ativos se o backend ao vivo reportar exatamente esse SHA em sua provenance pública. `RUNEFORGE_ADMIN_API_URL` é opcional quando a API administrativa usa a mesma origem de `RUNEFORGE_API_URL`.
+
+`RUNEFORGE_PORTAL_DEPLOY_SHA` e `RUNEFORGE_PORTAL_DEPLOY_ENV` identificam o próprio build do portal. Deploys certificados devem usar `npm run production:build`, que falha se essa identidade estiver ausente/inválida e, no GitHub Actions, exige igualdade exata com `GITHUB_SHA`.
 
 Essas variáveis são **server-side**. Não use prefixo `NEXT_PUBLIC_` e não exponha credenciais administrativas no browser.
 
@@ -56,7 +60,8 @@ O portal consome APIs publicadas do RuneForgedTCG:
 - Keyword Codex: `/api/public/game/keywords`
 - Rules Contracts: `/api/public/game/rules/contracts`
 - Alpha readiness: `/api/public/game/alpha/readiness`
-- Deployment provenance: `/api/public/game/deployment/provenance`
+- Game deployment provenance: `/api/public/game/deployment/provenance`
+- Portal deployment provenance: `/api/public/portal/deployment/provenance`
 
 Quando a API pública está tecnicamente indisponível, páginas editoriais podem usar fallback editorial explicitamente definido. O catálogo de cartas **não** usa uma cópia fallback: ele mostra indisponibilidade para preservar a fonte de verdade única.
 
@@ -83,7 +88,7 @@ O Launch Hub mostra o SHA completo e o ambiente do runtime. Quando `RUNEFORGE_EX
 
 ### Production Alpha Smoke
 
-Depois que site e game estiverem publicados, execute manualmente o workflow **Production Alpha Smoke** informando os dois origins HTTPS, o SHA exato certificado do RuneForgedTCG e o ambiente esperado (`alpha` ou `production`). O gate valida readiness, provenance, 7/7 capacidades, Ranked desligado, consistência de versões, `BUILD CERTIFICADO` no portal e o CTA `/play`, gerando manifesto + screenshot.
+Depois que site e game estiverem publicados, execute manualmente o workflow **Production Alpha Smoke** informando os dois origins HTTPS, o SHA exato certificado do SiteRuneForged, o SHA exato certificado do RuneForgedTCG e os ambientes esperados (`alpha` ou `production`). O gate valida readiness, provenance, 7/7 capacidades, Ranked desligado, consistência de versões, `BUILD CERTIFICADO` no portal e o CTA `/play`, gerando manifesto + screenshot.
 
 O mesmo script é exercitado pelo Full Stack Integration com uma exceção HTTP estritamente local; o workflow de produção nunca habilita essa exceção. Veja `docs/PRODUCTION_ALPHA_SMOKE.md`.
 

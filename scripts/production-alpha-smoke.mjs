@@ -5,6 +5,8 @@ import { chromium } from "@playwright/test";
 
 let siteUrl = null;
 let gameUrl = null;
+const expectedPortalSha = (process.env.RUNEFORGE_SMOKE_EXPECTED_PORTAL_SHA || "").trim().toLowerCase();
+const expectedPortalEnvironment = (process.env.RUNEFORGE_SMOKE_EXPECTED_PORTAL_ENV || "alpha").trim().toLowerCase();
 const expectedGameSha = (process.env.RUNEFORGE_SMOKE_EXPECTED_GAME_SHA || "").trim().toLowerCase();
 const expectedEnvironment = (process.env.RUNEFORGE_SMOKE_EXPECTED_ENV || "alpha").trim().toLowerCase();
 const allowHttp = process.env.RUNEFORGE_SMOKE_ALLOW_HTTP === "true";
@@ -49,8 +51,8 @@ function requireProductionTransport(origin, name) {
   assert.equal(isLoopback(url.hostname), false, `${name} must not use a loopback host for production smoke certification`);
 }
 
-async function publicJson(pathname) {
-  const response = await fetch(gameUrl + pathname, {
+async function publicJson(origin, pathname) {
+  const response = await fetch(origin + pathname, {
     headers: { Accept: "application/json" },
     cache: "no-store",
     redirect: "follow",
@@ -86,7 +88,12 @@ async function run() {
   siteUrl = normalizeOrigin(process.env.RUNEFORGE_SMOKE_SITE_URL, "RUNEFORGE_SMOKE_SITE_URL");
   gameUrl = normalizeOrigin(process.env.RUNEFORGE_SMOKE_GAME_URL, "RUNEFORGE_SMOKE_GAME_URL");
 
+  assert.match(expectedPortalSha, /^[0-9a-f]{40}$/, "RUNEFORGE_SMOKE_EXPECTED_PORTAL_SHA must be an exact 40-character Git SHA");
   assert.match(expectedGameSha, /^[0-9a-f]{40}$/, "RUNEFORGE_SMOKE_EXPECTED_GAME_SHA must be an exact 40-character Git SHA");
+  assert.ok(
+    expectedPortalEnvironment === "alpha" || expectedPortalEnvironment === "production",
+    "RUNEFORGE_SMOKE_EXPECTED_PORTAL_ENV must be alpha or production",
+  );
   assert.ok(
     expectedEnvironment === "alpha" || expectedEnvironment === "production",
     "RUNEFORGE_SMOKE_EXPECTED_ENV must be alpha or production",
@@ -94,7 +101,7 @@ async function run() {
   requireProductionTransport(siteUrl, "RUNEFORGE_SMOKE_SITE_URL");
   requireProductionTransport(gameUrl, "RUNEFORGE_SMOKE_GAME_URL");
 
-  const readinessEnvelope = await publicJson("/api/public/game/alpha/readiness");
+  const readinessEnvelope = await publicJson(gameUrl, "/api/public/game/alpha/readiness");
   const readiness = readinessEnvelope?.readiness;
   assert.equal(readinessEnvelope?.ok, true, "Alpha readiness envelope must be ok");
   assert.equal(readiness?.alpha, "playable");
@@ -120,7 +127,7 @@ async function run() {
     "Ranked must remain operationally disabled for this public Alpha smoke gate",
   );
 
-  const provenanceEnvelope = await publicJson("/api/public/game/deployment/provenance");
+  const provenanceEnvelope = await publicJson(gameUrl, "/api/public/game/deployment/provenance");
   const deployment = provenanceEnvelope?.deployment;
   assert.equal(provenanceEnvelope?.ok, true, "Deployment provenance envelope must be ok");
   assert.equal(deployment?.schemaVersion, 1);
@@ -131,6 +138,19 @@ async function run() {
     versionTuple(deployment),
     versionTuple(readiness?.release),
     "readiness and deployment provenance versions must agree exactly",
+  );
+
+  const portalProvenanceEnvelope = await publicJson(siteUrl, "/api/public/portal/deployment/provenance");
+  const portalDeployment = portalProvenanceEnvelope?.portal;
+  assert.equal(portalProvenanceEnvelope?.ok, true, "Portal deployment provenance envelope must be ok");
+  assert.equal(portalDeployment?.schemaVersion, 1);
+  assert.equal(portalDeployment?.application, "SiteRuneForged");
+  assert.equal(portalDeployment?.commitSha, expectedPortalSha, "live portal SHA must equal the certified expected SHA");
+  assert.equal(portalDeployment?.commitShort, expectedPortalSha.slice(0, 12));
+  assert.equal(
+    portalDeployment?.environment,
+    expectedPortalEnvironment,
+    "live portal environment must match the expected deployment environment",
   );
 
   const browser = await chromium.launch({ headless: true });
@@ -148,14 +168,20 @@ async function run() {
     assert.equal(await page.locator(".alpha-provenance-block-note").count(), 0);
 
     const panel = page.locator(".alpha-release-panel");
-    const portalSha = await panel.getAttribute("data-deploy-sha");
+    const renderedGameSha = await panel.getAttribute("data-deploy-sha");
     const portalVerification = await panel.getAttribute("data-deploy-verification");
-    assert.equal(portalSha, expectedGameSha, "portal must expose the exact certified game SHA");
+    const renderedPortalSha = await panel.getAttribute("data-portal-deploy-sha");
+    const renderedPortalEnvironment = await panel.getAttribute("data-portal-deploy-environment");
+    assert.equal(renderedGameSha, expectedGameSha, "portal must expose the exact certified game SHA");
     assert.equal(portalVerification, "verified", "portal must verify the live game SHA");
+    assert.equal(renderedPortalSha, expectedPortalSha, "portal must expose its exact certified portal SHA");
+    assert.equal(renderedPortalEnvironment, expectedPortalEnvironment);
 
     const panelText = await panel.innerText();
     assert.ok(panelText.includes(expectedGameSha), "portal build panel must visibly show the full 40-character game SHA");
-    assert.ok(panelText.includes(expectedEnvironment), "portal build panel must visibly show the deployment environment");
+    assert.ok(panelText.includes(expectedPortalSha), "portal build panel must visibly show the full 40-character portal SHA");
+    assert.ok(panelText.includes(expectedEnvironment), "portal build panel must visibly show the game deployment environment");
+    assert.ok(panelText.includes(expectedPortalEnvironment), "portal build panel must visibly show the portal deployment environment");
 
     const playHref = await page.locator("a.alpha-play-cta").getAttribute("href");
     const expectedPlayHref = new URL("/play", gameUrl).toString();
@@ -165,8 +191,10 @@ async function run() {
 
     portal = {
       alphaStatus: "ready",
-      verification: portalVerification,
-      commitSha: portalSha,
+      gameVerification: portalVerification,
+      gameCommitSha: renderedGameSha,
+      portalCommitSha: renderedPortalSha,
+      portalEnvironment: renderedPortalEnvironment,
       playHref,
     };
   } finally {
@@ -174,23 +202,26 @@ async function run() {
   }
 
   const manifest = {
-    schemaVersion: 1,
-    gate: "Production Alpha Smoke 1.0",
+    schemaVersion: 2,
+    gate: "Production Alpha Smoke 1.1",
     passed: true,
     generatedAt: new Date().toISOString(),
     siteUrl,
     gameUrl,
+    expectedPortalSha,
+    expectedPortalEnvironment,
     expectedGameSha,
     expectedEnvironment,
     transport: allowHttp ? "local-http-test-override" : "https",
     readiness,
     deployment,
+    portalDeployment,
     portal,
   };
   await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2) + "\n", "utf8");
 
   console.log(
-    `PRODUCTION ALPHA SMOKE: PASS — site ${siteUrl} · game ${gameUrl} · ${expectedEnvironment}@${expectedGameSha.slice(0, 12)} · 7/7 capabilities · portal verified`,
+    `PRODUCTION ALPHA SMOKE: PASS — site ${siteUrl} · portal ${expectedPortalEnvironment}@${expectedPortalSha.slice(0, 12)} · game ${expectedEnvironment}@${expectedGameSha.slice(0, 12)} · 7/7 capabilities · portal verified`,
   );
 }
 
@@ -198,12 +229,14 @@ run().catch(async (error) => {
   await fs.mkdir(evidenceDir, { recursive: true }).catch(() => {});
   const message = error instanceof Error ? error.message : String(error);
   await fs.writeFile(manifestPath, JSON.stringify({
-    schemaVersion: 1,
-    gate: "Production Alpha Smoke 1.0",
+    schemaVersion: 2,
+    gate: "Production Alpha Smoke 1.1",
     passed: false,
     generatedAt: new Date().toISOString(),
     siteUrl,
     gameUrl,
+    expectedPortalSha: expectedPortalSha || null,
+    expectedPortalEnvironment: expectedPortalEnvironment || null,
     expectedGameSha: expectedGameSha || null,
     expectedEnvironment: expectedEnvironment || null,
     error: message,

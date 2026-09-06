@@ -111,6 +111,14 @@ for (const viewport of [
     await expect(page.locator(".alpha-runtime-unavailable")).toContainText("STATUS INDISPONÍVEL");
     await expect(page.locator(".alpha-readiness-unavailable")).toContainText("Não foi possível carregar");
     await expect(page.locator(".alpha-build-unavailable")).toContainText("PROVENANCE INDISPONÍVEL");
+    await expect(page.locator(".alpha-release-panel")).toHaveAttribute(
+      "data-portal-deploy-sha",
+      process.env.RUNEFORGE_PORTAL_DEPLOY_SHA || "",
+    );
+    await expect(page.locator(".alpha-release-panel")).toHaveAttribute(
+      "data-portal-deploy-environment",
+      process.env.RUNEFORGE_PORTAL_DEPLOY_ENV || "",
+    );
     await expect(page.locator(".alpha-boundary-grid article")).toHaveCount(3);
     await page.screenshot({ path: `visual-evidence/alpha-launch-unavailable-${viewport.name}.png`, fullPage: true });
   });
@@ -122,3 +130,17 @@ for (const viewport of [
     await page.screenshot({ path: `visual-evidence/keyword-detail-unavailable-${viewport.name}.png`, fullPage: true });
   });
 }
+
+
+test("portal deployment provenance API", async ({ request }) => {
+  const response = await request.get("http://127.0.0.1:3000/api/public/portal/deployment/provenance");
+  expect(response.status()).toBe(200);
+  expect(response.headers()["cache-control"] || "").toContain("no-store");
+  const body = await response.json();
+  expect(body.ok).toBe(true);
+  expect(body.portal.schemaVersion).toBe(1);
+  expect(body.portal.application).toBe("SiteRuneForged");
+  expect(body.portal.commitSha).toBe(process.env.RUNEFORGE_PORTAL_DEPLOY_SHA);
+  expect(body.portal.commitShort).toBe((process.env.RUNEFORGE_PORTAL_DEPLOY_SHA || "").slice(0, 12));
+  expect(body.portal.environment).toBe(process.env.RUNEFORGE_PORTAL_DEPLOY_ENV);
+});

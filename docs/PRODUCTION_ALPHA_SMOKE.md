@@ -18,6 +18,8 @@ Required inputs:
 
 - `site_url` — public SiteRuneForged origin;
 - `game_url` — public RuneForgedTCG/game origin;
+- `expected_portal_sha` — exact certified 40-character SiteRuneForged commit SHA;
+- `expected_portal_environment` — `alpha` or `production`;
 - `expected_game_sha` — exact certified 40-character RuneForgedTCG commit SHA;
 - `expected_game_environment` — `alpha` or `production`.
 
@@ -31,6 +33,20 @@ For the manual production workflow:
 - query strings, fragments and path-prefixed origins are rejected.
 
 The executable smoke script has a narrowly scoped `RUNEFORGE_SMOKE_ALLOW_HTTP=true` override only so Full Stack Integration can test the same gate against local ephemeral servers. The production workflow never sets that override.
+
+## Portal deployment certification
+
+The smoke gate first requires:
+
+`GET /api/public/portal/deployment/provenance`
+
+- HTTP 200;
+- `Cache-Control: no-store`;
+- schema version 1;
+- application `SiteRuneForged`;
+- exact live portal `commitSha == expected_portal_sha`;
+- correct 12-character short SHA;
+- expected portal deployment environment.
 
 ## Game API certification
 
@@ -68,7 +84,7 @@ Chromium opens the deployed `/alpha` page and requires:
 - `BUILD CERTIFICADO`;
 - seven capability cards;
 - no readiness/provenance block state;
-- exact full game SHA in the public build panel;
+- exact full portal SHA and exact full game SHA in the public build panel;
 - `data-deploy-verification=verified`;
 - Play CTA targeting the supplied game origin at `/play`.
 
@@ -79,7 +95,7 @@ Every run writes:
 - `production-evidence/manifest.json`;
 - `production-evidence/alpha-launch.png`.
 
-The manifest records only public runtime identity and gate results. It contains no credentials or administrative data.
+The manifest schema is version 2 and records both portal deployment identity and game deployment identity, plus public runtime gate results. It contains no credentials or administrative data.
 
 ## Launch discipline
 

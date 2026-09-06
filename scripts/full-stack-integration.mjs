@@ -5,14 +5,31 @@ import { chromium } from "@playwright/test";
 const backend = process.env.RUNEFORGE_INTEGRATION_BACKEND_URL || "http://127.0.0.1:3001";
 const site = process.env.RUNEFORGE_INTEGRATION_SITE_URL || "http://127.0.0.1:3000";
 const expectedBackendSha = (process.env.RUNEFORGE_INTEGRATION_EXPECTED_SHA || "").toLowerCase();
+const expectedPortalSha = (process.env.RUNEFORGE_INTEGRATION_EXPECTED_PORTAL_SHA || "").toLowerCase();
 const evidenceDir = "integration-evidence";
 
 assert.match(expectedBackendSha, /^[0-9a-f]{40}$/, "cross-repository certification requires the exact 40-character backend SHA");
+assert.match(expectedPortalSha, /^[0-9a-f]{40}$/, "cross-repository certification requires the exact 40-character portal SHA");
 
 async function json(path) {
   const response = await fetch(backend + path, { headers: { Accept: "application/json" } });
   const body = await response.json().catch(() => null);
   assert.equal(response.ok, true, `${path} failed with HTTP ${response.status}: ${JSON.stringify(body)}`);
+  return body;
+}
+
+async function siteJson(path) {
+  const response = await fetch(site + path, {
+    headers: { Accept: "application/json" },
+    cache: "no-store",
+  });
+  const body = await response.json().catch(() => null);
+  assert.equal(response.ok, true, `site ${path} failed with HTTP ${response.status}: ${JSON.stringify(body)}`);
+  assert.match(
+    response.headers.get("cache-control") || "",
+    /(?:^|,)\s*no-store(?:,|$)/i,
+    `site ${path} must be cache-control: no-store`,
+  );
   return body;
 }
 
@@ -102,6 +119,14 @@ assert.equal(provenance.deployment.engineVersion, alpha.readiness.release.engine
 assert.equal(provenance.deployment.rulesetVersion, alpha.readiness.release.rulesetVersion);
 assert.equal(provenance.deployment.contentVersion, alpha.readiness.release.contentVersion);
 
+const portalProvenance = await siteJson("/api/public/portal/deployment/provenance");
+assert.equal(portalProvenance.ok, true);
+assert.equal(portalProvenance.portal.schemaVersion, 1);
+assert.equal(portalProvenance.portal.application, "SiteRuneForged");
+assert.equal(portalProvenance.portal.commitSha, expectedPortalSha, "portal provenance must report the exact checked-out portal SHA");
+assert.equal(portalProvenance.portal.commitShort, expectedPortalSha.slice(0, 12));
+assert.equal(portalProvenance.portal.environment, "alpha");
+
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } });
 
@@ -184,9 +209,22 @@ try {
     await page.locator(".alpha-release-panel").getAttribute("data-deploy-verification"),
     "verified",
   );
+  assert.equal(
+    await page.locator(".alpha-release-panel").getAttribute("data-portal-deploy-sha"),
+    expectedPortalSha,
+    "Alpha launch hub must expose the exact portal SHA",
+  );
+  assert.equal(
+    await page.locator(".alpha-release-panel").getAttribute("data-portal-deploy-environment"),
+    "alpha",
+  );
   assert.ok(
     (await page.locator(".alpha-release-panel").innerText()).includes(expectedBackendSha),
     "full 40-character backend SHA must be visible in the public build panel",
+  );
+  assert.ok(
+    (await page.locator(".alpha-release-panel").innerText()).includes(expectedPortalSha),
+    "full 40-character portal SHA must be visible in the public build panel",
   );
   assert.equal(await page.locator(".alpha-play-cta").getAttribute("href"), `${backend}/play`);
   await page.screenshot({ path: `${evidenceDir}/live-alpha-launch.png`, fullPage: true });
@@ -195,5 +233,5 @@ try {
 }
 
 console.log(
-  `FULL STACK INTEGRATION: PASS — backend ${backend} · site ${site} · Vanilla ${vanilla.cardCount} public cards · card ${firstCard.defId} · collections · regions · ${keywords.items.length} keywords · exact keyword ${liveKeyword.key} · 6 structural rules + 3 semantic rules · Alpha ${alpha.readiness.state} with ${alpha.readiness.capabilities.length} capabilities · provenance ${provenance.deployment.environment}@${provenance.deployment.commitShort}`,
+  `FULL STACK INTEGRATION: PASS — backend ${backend} · site ${site} · Vanilla ${vanilla.cardCount} public cards · card ${firstCard.defId} · collections · regions · ${keywords.items.length} keywords · exact keyword ${liveKeyword.key} · 6 structural rules + 3 semantic rules · Alpha ${alpha.readiness.state} with ${alpha.readiness.capabilities.length} capabilities · portal ${portalProvenance.portal.environment}@${portalProvenance.portal.commitShort} · game ${provenance.deployment.environment}@${provenance.deployment.commitShort}`,
 );
