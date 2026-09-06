@@ -42,6 +42,9 @@ const fullStackScript = read("scripts/full-stack-integration.mjs");
 const productionSmokeWorkflow = read(".github/workflows/production-alpha-smoke.yml");
 const productionSmokeScript = read("scripts/production-alpha-smoke.mjs");
 const adminResourcePage = read("src/app/admin/[resource]/page.tsx");
+const portalDeployment = read("src/lib/portal/deployment-provenance.ts");
+const portalDeploymentRoute = read("src/app/api/public/portal/deployment/provenance/route.ts");
+const portalReleasePreflight = read("scripts/portal-release-preflight.mjs");
 
 assert.match(editor, /const expectedVersion = item\?\.version \?\? 0/);
 assert.ok((editor.match(/expectedVersion/g) || []).length >= 5, "all create/update/lifecycle mutations must carry expectedVersion");
@@ -181,6 +184,10 @@ assert.match(alphaPage, /getPublicAlphaReadiness/);
 assert.match(alphaPage, /getPublicDeploymentProvenance/);
 assert.match(alphaPage, /data-deploy-sha/);
 assert.match(alphaPage, /data-deploy-verification/);
+assert.match(alphaPage, /data-portal-deploy-sha/);
+assert.match(alphaPage, /data-portal-deploy-environment/);
+assert.match(alphaPage, /Portal commit/);
+assert.match(alphaPage, /Portal env/);
 assert.match(alphaPage, /alpha-build-verification/);
 assert.match(alphaPage, /provenanceBlocksLaunch/);
 assert.doesNotMatch(alphaPage, /4028da3999c168fa43e55c967d2d9cf90d30ebb1/);
@@ -222,6 +229,9 @@ assert.match(fullStackScript, /\.rules-structural-grid/);
 assert.match(fullStackScript, /\/api\/public\/game\/alpha\/readiness/);
 assert.match(fullStackScript, /\/api\/public\/game\/deployment\/provenance/);
 assert.match(fullStackScript, /backend provenance must report the exact certified backend SHA/);
+assert.match(fullStackScript, /RUNEFORGE_INTEGRATION_EXPECTED_PORTAL_SHA/);
+assert.match(fullStackScript, /\/api\/public\/portal\/deployment\/provenance/);
+assert.match(fullStackScript, /portal provenance must report the exact checked-out portal SHA/);
 assert.match(fullStackScript, /\.alpha-build-verified/);
 assert.match(fullStackScript, /data-deploy-sha/);
 assert.match(fullStackScript, /data-deploy-verification/);
@@ -233,7 +243,7 @@ assert.match(fullStackScript, /integration-evidence/);
 assert.match(productionSmokeWorkflow, /workflow_dispatch:/);
 assert.doesNotMatch(productionSmokeWorkflow, /^\s*push:/m);
 assert.doesNotMatch(productionSmokeWorkflow, /^\s*pull_request:/m);
-for (const input of ["site_url", "game_url", "expected_game_sha", "expected_game_environment"]) {
+for (const input of ["site_url", "game_url", "expected_portal_sha", "expected_portal_environment", "expected_game_sha", "expected_game_environment"]) {
   assert.ok(productionSmokeWorkflow.includes(`${input}:`), `production smoke workflow must require input ${input}`);
 }
 assert.match(productionSmokeWorkflow, /node scripts\/production-alpha-smoke\.mjs/);
@@ -242,7 +252,12 @@ assert.match(productionSmokeWorkflow, /retention-days:\s*90/);
 assert.doesNotMatch(productionSmokeWorkflow, /RUNEFORGE_SMOKE_ALLOW_HTTP/);
 assert.doesNotMatch(productionSmokeWorkflow, /RANKED_RELEASE_CERTIFIED:\s*["']?true|PAYMENT_|MERCADO_PAGO/);
 
+assert.match(productionSmokeScript, /RUNEFORGE_SMOKE_EXPECTED_PORTAL_SHA/);
+assert.match(productionSmokeScript, /RUNEFORGE_SMOKE_EXPECTED_PORTAL_ENV/);
 assert.match(productionSmokeScript, /RUNEFORGE_SMOKE_EXPECTED_GAME_SHA/);
+assert.match(productionSmokeScript, /\/api\/public\/portal\/deployment\/provenance/);
+assert.match(productionSmokeScript, /live portal SHA must equal the certified expected SHA/);
+assert.match(productionSmokeScript, /Production Alpha Smoke 1\.1/);
 assert.match(productionSmokeScript, /\^\[0-9a-f\]\{40\}\$/);
 assert.match(productionSmokeScript, /must use HTTPS for production smoke certification/);
 assert.match(productionSmokeScript, /must not use a loopback host/);
@@ -257,6 +272,11 @@ assert.match(productionSmokeScript, /a\.alpha-play-cta/);
 assert.match(productionSmokeScript, /PRODUCTION ALPHA SMOKE: PASS/);
 assert.doesNotMatch(productionSmokeScript, /ADMIN_|PAYMENT_|MERCADO_PAGO|Authorization|Bearer/);
 
+assert.match(fullStackWorkflow, /RUNEFORGE_PORTAL_DEPLOY_SHA:\s*\$\{\{ github\.sha \}\}/);
+assert.match(fullStackWorkflow, /RUNEFORGE_PORTAL_DEPLOY_ENV:\s*alpha/);
+assert.match(fullStackWorkflow, /RUNEFORGE_INTEGRATION_EXPECTED_PORTAL_SHA="\$RUNEFORGE_PORTAL_DEPLOY_SHA"/);
+assert.match(fullStackWorkflow, /RUNEFORGE_SMOKE_EXPECTED_PORTAL_SHA="\$RUNEFORGE_PORTAL_DEPLOY_SHA"/);
+assert.match(fullStackWorkflow, /RUNEFORGE_SMOKE_EXPECTED_PORTAL_ENV=alpha/);
 assert.match(fullStackWorkflow, /RUNEFORGE_SMOKE_ALLOW_HTTP=true/);
 assert.match(fullStackWorkflow, /RUNEFORGE_SMOKE_EXPECTED_GAME_SHA="\$RUNEFORGE_BACKEND_REF"/);
 assert.match(fullStackWorkflow, /node scripts\/production-alpha-smoke\.mjs/);
@@ -266,6 +286,8 @@ assert.match(fullStackWorkflow, /integration-evidence\/production-smoke/);
 // Runtime and dependency reproducibility.
 assert.equal(packageJson.engines?.node, "22.23.x");
 assert.equal(packageJson.scripts?.["ci:install"], "npm ci --no-audit --no-fund");
+assert.equal(packageJson.scripts?.["release:preflight"], "node scripts/portal-release-preflight.mjs");
+assert.equal(packageJson.scripts?.["production:build"], "npm run release:preflight && npm run build");
 assert.equal(nvmrc, "22.23.2");
 assert.equal(packageJson.dependencies?.next, "15.5.25");
 assert.equal(packageJson.dependencies?.react, "19.2.8");
@@ -285,6 +307,9 @@ assert.equal(fs.existsSync(".github/workflows/lockfile-bootstrap.yml"), false, "
 assert.match(webWorkflow, /runs-on:\s*ubuntu-24\.04/);
 assert.match(webWorkflow, /node-version:\s*22\.23\.2/);
 assert.match(webWorkflow, /npm run ci:install/);
+assert.match(webWorkflow, /RUNEFORGE_PORTAL_DEPLOY_SHA:\s*\$\{\{ github\.sha \}\}/);
+assert.match(webWorkflow, /RUNEFORGE_PORTAL_DEPLOY_ENV:\s*ci/);
+assert.match(webWorkflow, /npm run production:build/);
 assert.doesNotMatch(webWorkflow, /npm install(?:\s|$)/);
 
 assert.match(fullStackWorkflow, /node-version:\s*22\.23\.2/);
@@ -319,4 +344,28 @@ assert.match(proxy, /params:\s*Promise<\{ path: string\[\] \}>/);
 assert.match(proxy, /await ctx\.params/);
 assert.match(adminResourcePage, /params:\s*Promise<\{ resource: string \}>/);
 
-console.log("PORTAL CONTRACT: PASS — CMS 2.1 · live game authority · Next 15 runtime hardening · deterministic npm lock · pinned full-stack provenance · production smoke gate");
+
+// SiteRuneForged self-provenance is public, bounded and fail-closed.
+assert.match(portalDeployment, /^import "server-only";/);
+assert.match(portalDeployment, /RUNEFORGE_PORTAL_DEPLOY_SHA/);
+assert.match(portalDeployment, /RUNEFORGE_PORTAL_DEPLOY_ENV/);
+assert.match(portalDeployment, /\^\[0-9a-f\]\{40\}\$/);
+assert.match(portalDeployment, /SiteRuneForged/);
+for (const environment of ["ci", "preview", "alpha", "staging", "production"]) {
+  assert.ok(portalDeployment.includes(`"${environment}"`), `portal provenance must allow ${environment}`);
+}
+assert.doesNotMatch(portalDeployment, /DATABASE_URL|ADMIN_API|PAYMENT_|MERCADO_PAGO|Authorization|Bearer|SECRET|TOKEN/);
+
+assert.match(portalDeploymentRoute, /dynamic = "force-dynamic"/);
+assert.match(portalDeploymentRoute, /Cache-Control": "no-store"/);
+assert.match(portalDeploymentRoute, /status: 503/);
+assert.match(portalDeploymentRoute, /Retry-After": "5"/);
+assert.match(portalDeploymentRoute, /getPortalDeploymentProvenance/);
+
+assert.match(portalReleasePreflight, /RUNEFORGE_PORTAL_DEPLOY_SHA/);
+assert.match(portalReleasePreflight, /RUNEFORGE_PORTAL_DEPLOY_ENV/);
+assert.match(portalReleasePreflight, /GITHUB_SHA/);
+assert.match(portalReleasePreflight, /PORTAL RELEASE PREFLIGHT: PASS/);
+assert.match(portalReleasePreflight, /configured portal SHA/);
+
+console.log("PORTAL CONTRACT: PASS — CMS 2.1 · Next 15 deterministic runtime · dual portal/game provenance · pinned full-stack chain · Production Alpha Smoke 1.1");
