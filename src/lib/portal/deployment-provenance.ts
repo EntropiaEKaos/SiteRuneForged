@@ -15,9 +15,27 @@ export type PortalDeploymentProvenance = {
 
 const SHA_40 = /^[0-9a-f]{40}$/;
 
+function explicitOrFallback(explicit: string | undefined, fallback: string | undefined) {
+  const value = explicit?.trim();
+  if (value) return value;
+  return fallback?.trim() || "";
+}
+
+function vercelEnvironment(value: string | undefined): PortalDeploymentEnvironment | "" {
+  const normalized = value?.trim().toLowerCase() || "";
+  if (normalized === "production") return "production";
+  if (normalized === "preview") return "preview";
+  return "";
+}
+
 export function getPortalDeploymentProvenance(): PortalDeploymentProvenance | null {
-  const commitSha = process.env.RUNEFORGE_PORTAL_DEPLOY_SHA?.trim().toLowerCase() || "";
-  const environment = process.env.RUNEFORGE_PORTAL_DEPLOY_ENV?.trim().toLowerCase() || "";
+  const commitSha = explicitOrFallback(
+    process.env.RUNEFORGE_PORTAL_DEPLOY_SHA,
+    process.env.VERCEL_GIT_COMMIT_SHA,
+  ).toLowerCase();
+
+  const explicitEnvironment = process.env.RUNEFORGE_PORTAL_DEPLOY_ENV?.trim().toLowerCase() || "";
+  const environment = explicitEnvironment || vercelEnvironment(process.env.VERCEL_ENV);
 
   if (!SHA_40.test(commitSha)) return null;
   if (!PORTAL_DEPLOYMENT_ENVIRONMENTS.includes(environment as PortalDeploymentEnvironment)) return null;
