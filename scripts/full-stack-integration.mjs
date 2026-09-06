@@ -39,6 +39,19 @@ const cardDetail = await json(`/api/public/game/cards/${encodeURIComponent(first
 assert.equal(cardDetail.item.defId, firstCard.defId);
 assert.equal(cardDetail.item.name, firstCard.name);
 
+const keywords = await json("/api/public/game/keywords");
+assert.equal(keywords.ok, true);
+assert.ok(Array.isArray(keywords.items));
+assert.ok(keywords.items.length >= 20, "public keyword codex must expose all canonical keywords");
+const liveKeyword = keywords.items.find((item) => item.source === "canonical" && Number(item.cardCount) > 0);
+assert.ok(liveKeyword?.key && liveKeyword?.name, "at least one canonical keyword must be used by a public card");
+const keywordCards = await json(`/api/public/game/cards?keyword=${encodeURIComponent(liveKeyword.key)}&page=1&pageSize=24`);
+assert.equal(
+  Number(liveKeyword.cardCount),
+  Number(keywordCards.total),
+  "keyword cardCount must equal exact public catalog filter",
+);
+
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } });
 
@@ -75,10 +88,29 @@ try {
   assert.ok(await page.locator(".collection-card-mini-grid a").count() > 0, "Emberhold detail must render live cards");
   assert.equal(await page.locator(".region-catalog-unavailable").count(), 0);
   await page.screenshot({ path: `${evidenceDir}/live-emberhold.png`, fullPage: true });
+
+  await page.goto(`${site}/keywords`, { waitUntil: "networkidle" });
+  assert.match(await page.locator("h1").innerText(), /Keywords & Mecânicas/i);
+  assert.ok(await page.locator(".keyword-card").count() >= 20, "mechanics codex must render canonical keywords");
+  assert.equal(await page.locator(".card-catalog-empty").count(), 0, "live mechanics codex must not show unavailable state");
+  await page.screenshot({ path: `${evidenceDir}/live-keywords.png`, fullPage: true });
+
+  await page.goto(`${site}/keywords/${encodeURIComponent(liveKeyword.key)}`, { waitUntil: "networkidle" });
+  const escapedKeywordName = liveKeyword.name.replace(/[.*+?^\${}()|[\]\\]/g, "\\$&");
+  assert.match(await page.locator("h1").innerText(), new RegExp(escapedKeywordName, "i"));
+  assert.ok(await page.locator(".collection-card-mini-grid a").count() > 0, "keyword detail must render exactly filtered live cards");
+  assert.equal(await page.locator(".region-catalog-unavailable").count(), 0);
+  await page.screenshot({ path: `${evidenceDir}/live-keyword-detail.png`, fullPage: true });
+
+  await page.goto(`${site}/cards?keyword=${encodeURIComponent(liveKeyword.key)}`, { waitUntil: "networkidle" });
+  assert.match(await page.locator("h1").innerText(), /Catálogo de cartas/i);
+  assert.ok(await page.locator(".catalog-card").count() > 0, "exact keyword filter must render matching public cards");
+  assert.equal(await page.locator('select[name="keyword"]').inputValue(), liveKeyword.key);
+  await page.screenshot({ path: `${evidenceDir}/live-keyword-filter.png`, fullPage: true });
 } finally {
   await browser.close();
 }
 
 console.log(
-  `FULL STACK INTEGRATION: PASS — backend ${backend} · site ${site} · Vanilla ${vanilla.cardCount} public cards · card ${firstCard.defId} · collections · regions`,
+  `FULL STACK INTEGRATION: PASS — backend ${backend} · site ${site} · Vanilla ${vanilla.cardCount} public cards · card ${firstCard.defId} · collections · regions · ${keywords.items.length} keywords · exact keyword ${liveKeyword.key}`,
 );

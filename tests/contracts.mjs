@@ -21,6 +21,9 @@ const collectionsIndex = read("src/app/collections/page.tsx");
 const collectionDetail = read("src/app/collections/[slug]/page.tsx");
 const regionsIndex = read("src/app/regions/page.tsx");
 const regionDetail = read("src/app/regions/[region]/page.tsx");
+const publicKeywords = read("src/lib/keywords/public-keywords.ts");
+const keywordsIndex = read("src/app/keywords/page.tsx");
+const keywordDetail = read("src/app/keywords/[key]/page.tsx");
 const fullStackWorkflow = read(".github/workflows/full-stack-integration.yml");
 const fullStackScript = read("scripts/full-stack-integration.mjs");
 
@@ -105,8 +108,25 @@ assert.match(regionDetail, /notFound/);
 assert.ok(fs.existsSync("src/app/regions/page.tsx"));
 assert.ok(fs.existsSync("src/app/regions/[region]/page.tsx"));
 
+assert.match(publicKeywords, /\/api\/public\/game\/keywords/);
+assert.match(publicKeywords, /getPublicKeywords/);
+assert.match(publicKeywords, /getPublicKeyword/);
+assert.doesNotMatch(publicKeywords, /admin|Bearer|Authorization|behavior|effect|condition/);
+assert.match(keywordsIndex, /getPublicKeywords/);
+assert.match(keywordsIndex, /source === "canonical"/);
+assert.match(keywordsIndex, /cardCount/);
+assert.match(keywordDetail, /getPublicKeyword/);
+assert.match(keywordDetail, /getPublicCardCatalog/);
+assert.match(keywordDetail, /keyword: keyword\.key/);
+assert.match(keywordDetail, /notFound/);
+assert.match(cardsIndex, /name="keyword"/);
+assert.match(cardsIndex, /facets\.keywords/);
+assert.match(cardDetail, /\/keywords\/\$\{encodeURIComponent\(keyword\)\}/);
+assert.ok(fs.existsSync("src/app/keywords/page.tsx"));
+assert.ok(fs.existsSync("src/app/keywords/[key]/page.tsx"));
+
 assert.match(fullStackWorkflow, /EntropiaEKaos\/RuneForgedTCG/);
-assert.match(fullStackWorkflow, /RUNEFORGE_BACKEND_REF:\s*[0-9a-f]{40}/);
+assert.match(fullStackWorkflow, /RUNEFORGE_BACKEND_REF:\s*3b0ec9a4a4bd20d865a947ba881420c902a2752d/);
 assert.match(fullStackWorkflow, /postgres:17-alpine/);
 assert.match(fullStackWorkflow, /RUNEFORGE_API_URL=http:\/\/127\.0\.0\.1:3001/);
 assert.match(fullStackWorkflow, /full-stack-integration\.mjs/);
@@ -114,6 +134,10 @@ assert.match(fullStackScript, /collection cardCount must equal the public card c
 assert.match(fullStackScript, /\.catalog-card/);
 assert.match(fullStackScript, /\.collection-card-live/);
 assert.match(fullStackScript, /\.region-live-card/);
+assert.match(fullStackScript, /\/api\/public\/game\/keywords/);
+assert.match(fullStackScript, /keyword cardCount must equal exact public catalog filter/);
+assert.match(fullStackScript, /\.keyword-card/);
+assert.match(fullStackScript, /\/keywords\//);
 assert.match(fullStackScript, /integration-evidence/);
 
-console.log("PORTAL CONTRACT: PASS — CMS 2.1 · live cards/collections/regions · pinned cross-repo integration gate · no duplicate game authority");
+console.log("PORTAL CONTRACT: PASS — CMS 2.1 · live cards/collections/regions/keywords · pinned cross-repo integration gate · no duplicate game authority");

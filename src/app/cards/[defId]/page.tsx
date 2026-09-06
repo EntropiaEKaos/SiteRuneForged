@@ -15,13 +15,13 @@ export default async function CardDetailPage({ params }: { params: { defId: stri
     );
   }
 
-  const keywords = [...card.keywords, ...card.customKeywords];
+  const keywords = [...new Set([...card.keywords, ...card.customKeywords])];
 
   return (
     <main className="catalog-shell card-detail-shell">
       <header className="catalog-topbar">
         <Link className="content-brand" href="/"><span className="content-brand-mark">RF</span><span><strong>RuneForge</strong><small>Arquivo de cartas</small></span></Link>
-        <nav><Link href="/cards">Catálogo</Link><Link href="/collections">Coleções</Link><Link href="/rules">Regras</Link></nav>
+        <nav><Link href="/cards">Catálogo</Link><Link href="/collections">Coleções</Link><Link href="/keywords">Mecânicas</Link><Link href="/rules">Regras</Link></nav>
         <Link className="content-home-link" href="/cards">← Catálogo</Link>
       </header>
 
@@ -59,7 +59,7 @@ export default async function CardDetailPage({ params }: { params: { defId: stri
 
           <section className="card-detail-keywords">
             <span>KEYWORDS</span>
-            <div>{keywords.length ? keywords.map((keyword) => <em key={keyword}>{keyword}</em>) : <small>Sem keywords impressas.</small>}</div>
+            <div>{keywords.length ? keywords.map((keyword) => <Link className="card-keyword-link" href={`/keywords/${encodeURIComponent(keyword)}`} key={keyword}>{keyword}</Link>) : <small>Sem keywords impressas.</small>}</div>
           </section>
 
           <footer><code>{card.defId}</code><Link href={`/cards?collection=${encodeURIComponent(card.collection.key)}`}>Ver coleção →</Link></footer>

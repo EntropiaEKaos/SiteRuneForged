@@ -14,6 +14,7 @@ function queryFrom(searchParams: Search): CardCatalogQuery {
     type: scalar(searchParams.type),
     rarity: scalar(searchParams.rarity),
     collection: scalar(searchParams.collection),
+    keyword: scalar(searchParams.keyword),
     page: scalar(searchParams.page) || "1",
     pageSize: "24",
   };
@@ -51,6 +52,7 @@ export default async function CardsPage({ searchParams = {} }: { searchParams?: 
         </Link>
         <nav aria-label="Catálogo">
           <Link href="/collections">Coleções</Link>
+          <Link href="/keywords">Mecânicas</Link>
           <Link href="/rules">Regras</Link>
           <Link href="/lore">Lore</Link>
         </nav>
@@ -106,6 +108,13 @@ export default async function CardsPage({ searchParams = {} }: { searchParams?: 
               <select name="collection" defaultValue={String(query.collection || "")}>
                 <option value="">Todas</option>
                 {options(state.data.facets.collections)}
+              </select>
+            </label>
+            <label>
+              <span>Keyword</span>
+              <select name="keyword" defaultValue={String(query.keyword || "")}>
+                <option value="">Todas</option>
+                {options(state.data.facets.keywords)}
               </select>
             </label>
             <button type="submit">Filtrar</button>

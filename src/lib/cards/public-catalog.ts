@@ -48,6 +48,7 @@ export type PublicCardCatalogResponse = {
     types: CardFacet[];
     rarities: CardFacet[];
     collections: CardFacet[];
+    keywords: CardFacet[];
   };
 };
 
@@ -57,6 +58,7 @@ export type CardCatalogQuery = {
   type?: string;
   rarity?: string;
   collection?: string;
+  keyword?: string;
   page?: string | number;
   pageSize?: string | number;
 };
