@@ -14,16 +14,17 @@ Configure no ambiente do servidor/hosting:
 
 ```bash
 RUNEFORGE_API_URL=https://<backend-publico-runeforge>
+RUNEFORGE_GAME_URL=https://<frontend-jogavel-runeforge>
 RUNEFORGE_ADMIN_API_URL=https://<backend-admin-runeforge>
 ```
 
-`RUNEFORGE_ADMIN_API_URL` é opcional quando a API administrativa usa a mesma origem de `RUNEFORGE_API_URL`.
+`RUNEFORGE_GAME_URL` é opcional e define a origem navegável do jogo usada pelos CTAs do Alpha; quando omitida, o portal usa a origem de `RUNEFORGE_API_URL`. `RUNEFORGE_ADMIN_API_URL` é opcional quando a API administrativa usa a mesma origem de `RUNEFORGE_API_URL`.
 
 Essas variáveis são **server-side**. Não use prefixo `NEXT_PUBLIC_` e não exponha credenciais administrativas no browser.
 
 ### Vercel
 
-Em **Project Settings → Environment Variables**, defina `RUNEFORGE_API_URL` para Preview e Production. Se a origem administrativa for diferente, defina também `RUNEFORGE_ADMIN_API_URL`.
+Em **Project Settings → Environment Variables**, defina `RUNEFORGE_API_URL` para Preview e Production. Se o frontend jogável estiver em outra origem, defina `RUNEFORGE_GAME_URL`. Se a origem administrativa for diferente, defina também `RUNEFORGE_ADMIN_API_URL`.
 
 Depois de alterar variáveis, faça um novo deployment para que Server Components e BFF usem a configuração atual.
 
@@ -34,6 +35,9 @@ O portal consome APIs publicadas do RuneForgedTCG:
 - Portal CMS: `/api/public/site/*`
 - Catálogo de cartas: `/api/public/game/cards`
 - Detalhe de carta: `/api/public/game/cards/{defId}`
+- Keyword Codex: `/api/public/game/keywords`
+- Rules Contracts: `/api/public/game/rules/contracts`
+- Alpha readiness: `/api/public/game/alpha/readiness`
 
 Quando a API pública está tecnicamente indisponível, páginas editoriais podem usar fallback editorial explicitamente definido. O catálogo de cartas **não** usa uma cópia fallback: ele mostra indisponibilidade para preservar a fonte de verdade única.
 
