@@ -84,4 +84,19 @@ for (const viewport of [
     await expect(page.locator(".region-catalog-unavailable")).toContainText("catálogo de cartas");
     await page.screenshot({ path: `visual-evidence/region-detail-${viewport.name}.png`, fullPage: true });
   });
+
+  test(`keywords unavailable visual ${viewport.name}`, async ({ page }) => {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await page.goto("http://127.0.0.1:3000/keywords", { waitUntil: "networkidle" });
+    await expect(page.locator("h1")).toContainText("Keywords & Mecânicas");
+    await expect(page.locator(".card-catalog-empty")).toContainText("mecânicas não responderam");
+    await page.screenshot({ path: `visual-evidence/keywords-unavailable-${viewport.name}.png`, fullPage: true });
+  });
+
+  test(`keyword detail unavailable visual ${viewport.name}`, async ({ page }) => {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await page.goto("http://127.0.0.1:3000/keywords/Flying", { waitUntil: "networkidle" });
+    await expect(page.locator("h1")).toContainText("Não foi possível abrir esta mecânica");
+    await page.screenshot({ path: `visual-evidence/keyword-detail-unavailable-${viewport.name}.png`, fullPage: true });
+  });
 }
