@@ -18,3 +18,16 @@ export async function apiGet<T>(path: string): Promise<T> {
   if (!response.ok) throw new RuneForgeApiError(response.status, `RuneForge API request failed: ${path}`);
   return response.json() as Promise<T>;
 }
+
+
+export async function apiGetFresh<T>(path: string): Promise<T> {
+  if (!API_URL) throw new RuneForgeApiError(500, "RUNEFORGE_API_URL is not configured");
+
+  const response = await fetch(`${API_URL.replace(/\/$/, "")}${path}`, {
+    headers: { Accept: "application/json" },
+    cache: "no-store",
+  });
+
+  if (!response.ok) throw new RuneForgeApiError(response.status, `RuneForge API request failed: ${path}`);
+  return response.json() as Promise<T>;
+}
