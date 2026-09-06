@@ -39,8 +39,8 @@ function options(facets: CardFacet[]) {
   ));
 }
 
-export default async function CardsPage({ searchParams = {} }: { searchParams?: Search }) {
-  const query = queryFrom(searchParams);
+export default async function CardsPage({ searchParams }: { searchParams?: Promise<Search> }) {
+  const query = queryFrom((await searchParams) ?? {});
   const state = await getPublicCardCatalog(query);
 
   return (
