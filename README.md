@@ -8,6 +8,23 @@ Portal público oficial do RuneForge, mantido em repositório e deploy separados
 - **RuneForgedTCG** — autoridade de jogo, cartas, coleções, CMS, operadores, MFA, RBAC, publicação e auditoria.
 - O site não mantém uma segunda base de cartas, usuários administrativos ou conteúdo publicado.
 
+## Runtime reprodutível
+
+O portal usa uma baseline única de runtime e dependências:
+
+- **Node 22.23.2**, fixado em `.nvmrc` e nos workflows;
+- **Next.js 15.5.25**, na linha de manutenção usada por este Alpha;
+- **React / ReactDOM 19.2.8**;
+- **Playwright 1.63.0** para certificação de navegador;
+- `package-lock.json` lockfileVersion 3 versionado;
+- `npm run ci:install` → `npm ci --no-audit --no-fund` em todos os gates.
+
+A migração aposentou o antigo Next 14.2.31 depois que a auditoria de dependências identificou que aquela linha não era mais uma baseline aceitável para segurança em 2026. As rotas App Router foram migradas para os request props assíncronos do Next 15 (`params` / `searchParams` como Promises).
+
+Não use `npm install` em CI ou em gates de release. Mudanças de dependência devem alterar `package.json` e `package-lock.json` de forma explícita e passar novamente Web CI + Full Stack Integration.
+
+Veja `docs/PORTAL_RUNTIME_HARDENING.md`.
+
 ## Variáveis de ambiente
 
 Configure no ambiente do servidor/hosting:
@@ -53,13 +70,14 @@ O site apenas encaminha sessão e mutations; `expectedVersion`, RBAC, MFA, locks
 
 O GitHub Actions executa:
 
-1. contratos de integração;
-2. TypeScript typecheck;
-3. build de produção;
-4. Chromium visual E2E em desktop e mobile;
-5. upload das evidências visuais;
-6. certificação full-stack contra um SHA exato do RuneForgedTCG, incluindo comparação da provenance ao vivo com o SHA esperado pelo portal;
-7. um **Production Alpha Smoke** manual para validar os origins HTTPS já implantados contra o SHA certificado do game.
+1. instalação determinística via `npm ci` no Node 22.23.2;
+2. contratos de integração e de runtime/lockfile;
+3. TypeScript typecheck;
+4. build de produção;
+5. Chromium visual E2E em desktop e mobile;
+6. upload das evidências visuais;
+7. certificação full-stack contra um SHA exato do RuneForgedTCG, incluindo comparação da provenance ao vivo com o SHA esperado pelo portal;
+8. um **Production Alpha Smoke** manual para validar os origins HTTPS já implantados contra o SHA certificado do game.
 
 O Launch Hub mostra o SHA completo e o ambiente do runtime. Quando `RUNEFORGE_EXPECTED_DEPLOY_SHA` está configurado, divergência, provenance indisponível ou pin inválido bloqueiam os CTAs do jogo. Veja `docs/ALPHA_BUILD_PROVENANCE.md`.
 
