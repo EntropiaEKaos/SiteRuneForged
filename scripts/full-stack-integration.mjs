@@ -96,8 +96,7 @@ try {
   await page.screenshot({ path: `${evidenceDir}/live-keywords.png`, fullPage: true });
 
   await page.goto(`${site}/keywords/${encodeURIComponent(liveKeyword.key)}`, { waitUntil: "networkidle" });
-  const escapedKeywordName = liveKeyword.name.replace(/[.*+?^\${}()|[\]\\]/g, "\\  await page.screenshot({ path: `${evidenceDir}/live-emberhold.png`, fullPage: true });
-");
+  const escapedKeywordName = liveKeyword.name.replace(/[.*+?^\${}()|[\]\\]/g, "\\$&");
   assert.match(await page.locator("h1").innerText(), new RegExp(escapedKeywordName, "i"));
   assert.ok(await page.locator(".collection-card-mini-grid a").count() > 0, "keyword detail must render exactly filtered live cards");
   assert.equal(await page.locator(".region-catalog-unavailable").count(), 0);
