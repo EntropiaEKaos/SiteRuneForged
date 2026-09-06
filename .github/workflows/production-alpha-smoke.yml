@@ -1,0 +1,72 @@
+name: Production Alpha Smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      site_url:
+        description: "Deployed public SiteRuneForged origin, e.g. https://runeforge.example"
+        required: true
+        type: string
+      game_url:
+        description: "Deployed public RuneForgedTCG/game origin"
+        required: true
+        type: string
+      expected_game_sha:
+        description: "Exact certified 40-character RuneForgedTCG commit SHA"
+        required: true
+        type: string
+      expected_game_environment:
+        description: "Expected public game deployment environment"
+        required: true
+        default: alpha
+        type: choice
+        options:
+          - alpha
+          - production
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-alpha-smoke-${{ inputs.site_url }}-${{ inputs.game_url }}
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    env:
+      RUNEFORGE_SMOKE_SITE_URL: ${{ inputs.site_url }}
+      RUNEFORGE_SMOKE_GAME_URL: ${{ inputs.game_url }}
+      RUNEFORGE_SMOKE_EXPECTED_GAME_SHA: ${{ inputs.expected_game_sha }}
+      RUNEFORGE_SMOKE_EXPECTED_ENV: ${{ inputs.expected_game_environment }}
+      RUNEFORGE_SMOKE_EVIDENCE_DIR: production-evidence
+
+    steps:
+      - name: Checkout smoke gate
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup certified Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.2
+
+      - name: Install portal test runtime
+        run: npm install
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Certify deployed public Alpha
+        run: node scripts/production-alpha-smoke.mjs
+
+      - name: Upload production smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-alpha-smoke-${{ inputs.expected_game_sha }}
+          path: production-evidence/
+          if-no-files-found: error
+          retention-days: 90
