@@ -27,6 +27,10 @@ const keywordDetail = read("src/app/keywords/[key]/page.tsx");
 const publicRules = read("src/lib/rules/public-rules.ts");
 const rulesIndex = read("src/app/rules/page.tsx");
 const rulesCss = read("src/app/rules/rules-intelligence.css");
+const publicAlpha = read("src/lib/alpha/public-alpha.ts");
+const alphaPage = read("src/app/alpha/page.tsx");
+const alphaOrigin = read("src/lib/runeforge-api/public-origin.ts");
+const homePage = read("src/app/page.tsx");
 const fullStackWorkflow = read(".github/workflows/full-stack-integration.yml");
 const fullStackScript = read("scripts/full-stack-integration.mjs");
 
@@ -144,6 +148,26 @@ assert.match(rulesIndex, /rules-intelligence\.css/);
 assert.match(rulesCss, /rule-contract-card/);
 assert.ok(fs.existsSync("src/app/rules/rules-intelligence.css"));
 
+assert.match(publicAlpha, /\/api\/public\/game\/alpha\/readiness/);
+assert.match(publicAlpha, /getPublicAlphaReadiness/);
+assert.doesNotMatch(publicAlpha, /admin|Bearer|Authorization|economy|matchmaking/);
+assert.match(alphaOrigin, /^import "server-only";/);
+assert.match(alphaOrigin, /RUNEFORGE_GAME_URL/);
+assert.match(alphaOrigin, /RUNEFORGE_API_URL/);
+assert.doesNotMatch(alphaOrigin, /NEXT_PUBLIC_/);
+assert.match(alphaPage, /getPublishedContent<AlphaLaunchContent>\("alpha", "main"/);
+assert.match(alphaPage, /getPublicAlphaReadiness/);
+assert.match(alphaPage, /getRuneForgeGameHref/);
+assert.match(alphaPage, /alpha-runtime-status/);
+assert.match(alphaPage, /alpha-capability-card/);
+assert.match(alphaPage, /rankedOperational/);
+assert.match(alphaPage, /Dinheiro real/);
+assert.match(alphaPage, /Live Ops em escala/);
+assert.match(homePage, /getPublishedContent<AlphaLaunchContent>\("alpha", "main"/);
+assert.match(homePage, /href="\/alpha"/);
+assert.ok(fs.existsSync("src/app/alpha/page.tsx"));
+assert.ok(fs.existsSync("src/app/alpha/alpha-launch.css"));
+
 assert.match(fullStackWorkflow, /EntropiaEKaos\/RuneForgedTCG/);
 assert.match(fullStackWorkflow, /RUNEFORGE_BACKEND_REF:\s*b599bf1901d83e6de9dca167a89a7f467167db40/);
 assert.match(fullStackWorkflow, /postgres:17-alpine/);
@@ -161,6 +185,10 @@ assert.match(fullStackScript, /public rules must expose six structural contracts
 assert.match(fullStackScript, /public rules must expose three certified semantic contracts/);
 assert.match(fullStackScript, /\.rules-semantic-grid/);
 assert.match(fullStackScript, /\.rules-structural-grid/);
+assert.match(fullStackScript, /\/api\/public\/game\/alpha\/readiness/);
+assert.match(fullStackScript, /certified Alpha scope must expose seven capabilities/);
+assert.match(fullStackScript, /\.alpha-capability-card/);
+assert.match(fullStackScript, /\.alpha-runtime-ready/);
 assert.match(fullStackScript, /integration-evidence/);
 
-console.log("PORTAL CONTRACT: PASS — CMS 2.1 · live cards/collections/regions/keywords/rules · pinned cross-repo integration gate · no duplicate game authority");
+console.log("PORTAL CONTRACT: PASS — CMS 2.1 · live cards/collections/regions/keywords/rules/alpha · pinned cross-repo integration gate · no duplicate game authority");
