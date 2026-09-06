@@ -58,8 +58,15 @@ O GitHub Actions executa:
 3. build de produção;
 4. Chromium visual E2E em desktop e mobile;
 5. upload das evidências visuais;
-6. certificação full-stack contra um SHA exato do RuneForgedTCG, incluindo comparação da provenance ao vivo com o SHA esperado pelo portal.
+6. certificação full-stack contra um SHA exato do RuneForgedTCG, incluindo comparação da provenance ao vivo com o SHA esperado pelo portal;
+7. um **Production Alpha Smoke** manual para validar os origins HTTPS já implantados contra o SHA certificado do game.
 
 O Launch Hub mostra o SHA completo e o ambiente do runtime. Quando `RUNEFORGE_EXPECTED_DEPLOY_SHA` está configurado, divergência, provenance indisponível ou pin inválido bloqueiam os CTAs do jogo. Veja `docs/ALPHA_BUILD_PROVENANCE.md`.
+
+### Production Alpha Smoke
+
+Depois que site e game estiverem publicados, execute manualmente o workflow **Production Alpha Smoke** informando os dois origins HTTPS, o SHA exato certificado do RuneForgedTCG e o ambiente esperado (`alpha` ou `production`). O gate valida readiness, provenance, 7/7 capacidades, Ranked desligado, consistência de versões, `BUILD CERTIFICADO` no portal e o CTA `/play`, gerando manifesto + screenshot.
+
+O mesmo script é exercitado pelo Full Stack Integration com uma exceção HTTP estritamente local; o workflow de produção nunca habilita essa exceção. Veja `docs/PRODUCTION_ALPHA_SMOKE.md`.
 
 Documentação adicional está em `docs/`.
