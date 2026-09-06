@@ -9,9 +9,10 @@ function key(value: string) {
   return value.trim().toLocaleLowerCase("en-US");
 }
 
-export default async function RegionDetailPage({ params }: { params: { region: string } }) {
+export default async function RegionDetailPage({ params }: { params: Promise<{ region: string }> }) {
+  const { region: regionParam } = await params;
   const regions = await getPublishedContent<RegionShowcaseContent>("regions", "home", defaultRegionsHome);
-  const region = regions.items.find((item) => key(item.name) === key(params.region));
+  const region = regions.items.find((item) => key(item.name) === key(regionParam));
   if (!region) notFound();
 
   const catalog = await getPublicCardCatalog({ region: region.name, page: 1, pageSize: 24 });
