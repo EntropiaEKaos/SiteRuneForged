@@ -18,8 +18,9 @@ function lifecycleLabel(value: string) {
   return value.toUpperCase();
 }
 
-export default async function CollectionDetailPage({ params }: { params: { slug: string } }) {
-  const collection = await getPublicCollection(params.slug);
+export default async function CollectionDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const collection = await getPublicCollection(slug);
   if (collection === null) notFound();
 
   if (collection === undefined) {
