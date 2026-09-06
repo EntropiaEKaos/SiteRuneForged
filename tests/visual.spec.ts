@@ -10,6 +10,7 @@ for (const viewport of [
     await expect(page.locator("h1")).toContainText("Forje sua lenda");
     await expect(page.locator("#regions .region-card")).toHaveCount(6);
     await expect(page.locator("#cards")).toBeVisible();
+    await expect(page.locator('#alpha a[href="/alpha"]')).toBeVisible();
     await page.screenshot({ path: `visual-evidence/home-${viewport.name}.png`, fullPage: true });
   });
 
@@ -101,6 +102,16 @@ for (const viewport of [
     await expect(page.locator("h1")).toContainText("Keywords & Mecânicas");
     await expect(page.locator(".card-catalog-empty")).toContainText("mecânicas não responderam");
     await page.screenshot({ path: `visual-evidence/keywords-unavailable-${viewport.name}.png`, fullPage: true });
+  });
+
+  test(`alpha launch unavailable visual ${viewport.name}`, async ({ page }) => {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await page.goto("http://127.0.0.1:3000/alpha", { waitUntil: "networkidle" });
+    await expect(page.locator("h1")).toContainText("Entre na forja");
+    await expect(page.locator(".alpha-runtime-unavailable")).toContainText("STATUS INDISPONÍVEL");
+    await expect(page.locator(".alpha-readiness-unavailable")).toContainText("Não foi possível carregar");
+    await expect(page.locator(".alpha-boundary-grid article")).toHaveCount(3);
+    await page.screenshot({ path: `visual-evidence/alpha-launch-unavailable-${viewport.name}.png`, fullPage: true });
   });
 
   test(`keyword detail unavailable visual ${viewport.name}`, async ({ page }) => {
