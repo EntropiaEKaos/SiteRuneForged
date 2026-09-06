@@ -13,8 +13,9 @@ const domainLabel: Record<string, string> = {
   death: "Morte",
 };
 
-export default async function KeywordDetailPage({ params }: { params: { key: string } }) {
-  const keyword = await getPublicKeyword(params.key);
+export default async function KeywordDetailPage({ params }: { params: Promise<{ key: string }> }) {
+  const { key } = await params;
+  const keyword = await getPublicKeyword(key);
   if (keyword === null) notFound();
 
   if (keyword === undefined) {
