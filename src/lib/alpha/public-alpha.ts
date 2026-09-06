@@ -1,4 +1,4 @@
-import { apiGet } from "@/lib/runeforge-api/client";
+import { apiGetFresh } from "@/lib/runeforge-api/client";
 
 export type AlphaCapability = {
   key: "onboarding" | "deck-selection" | "mulligan" | "pve" | "forge" | "rewards-progression" | "casual-pvp";
@@ -32,7 +32,7 @@ export type PublicAlphaReadinessState =
 
 export async function getPublicAlphaReadiness(): Promise<PublicAlphaReadinessState> {
   try {
-    const response = await apiGet<{ ok: true; readiness: PublicAlphaReadiness }>(
+    const response = await apiGetFresh<{ ok: true; readiness: PublicAlphaReadiness }>(
       "/api/public/game/alpha/readiness",
     );
     return response.readiness
