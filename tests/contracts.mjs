@@ -247,7 +247,7 @@ for (const input of ["site_url", "game_url", "expected_portal_sha", "expected_po
   assert.ok(productionSmokeWorkflow.includes(`${input}:`), `production smoke workflow must require input ${input}`);
 }
 assert.match(productionSmokeWorkflow, /node scripts\/production-alpha-smoke\.mjs/);
-assert.match(productionSmokeWorkflow, /production-alpha-smoke-\$\{\{ inputs\.expected_game_sha \}\}/);
+assert.match(productionSmokeWorkflow, /production-alpha-smoke-\$\{\{ inputs\.expected_portal_sha \}\}-\$\{\{ inputs\.expected_game_sha \}\}/);
 assert.match(productionSmokeWorkflow, /retention-days:\s*90/);
 assert.doesNotMatch(productionSmokeWorkflow, /RUNEFORGE_SMOKE_ALLOW_HTTP/);
 assert.doesNotMatch(productionSmokeWorkflow, /RANKED_RELEASE_CERTIFIED:\s*["']?true|PAYMENT_|MERCADO_PAGO/);
