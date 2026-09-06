@@ -35,6 +35,8 @@ const alphaOrigin = read("src/lib/runeforge-api/public-origin.ts");
 const homePage = read("src/app/page.tsx");
 const fullStackWorkflow = read(".github/workflows/full-stack-integration.yml");
 const fullStackScript = read("scripts/full-stack-integration.mjs");
+const productionSmokeWorkflow = read(".github/workflows/production-alpha-smoke.yml");
+const productionSmokeScript = read("scripts/production-alpha-smoke.mjs");
 
 assert.match(editor, /const expectedVersion = item\?\.version \?\? 0/);
 assert.ok((editor.match(/expectedVersion/g) || []).length >= 5, "all create/update/lifecycle mutations must carry expectedVersion");
@@ -223,4 +225,36 @@ assert.match(fullStackScript, /\.alpha-capability-card/);
 assert.match(fullStackScript, /\.alpha-runtime-ready/);
 assert.match(fullStackScript, /integration-evidence/);
 
-console.log("PORTAL CONTRACT: PASS — CMS 2.1 · live cards/collections/regions/keywords/rules/alpha · exact build provenance · pinned cross-repo integration gate · no duplicate game authority");
+assert.match(productionSmokeWorkflow, /workflow_dispatch:/);
+assert.doesNotMatch(productionSmokeWorkflow, /^\s*push:/m);
+assert.doesNotMatch(productionSmokeWorkflow, /^\s*pull_request:/m);
+for (const input of ["site_url", "game_url", "expected_game_sha", "expected_game_environment"]) {
+  assert.ok(productionSmokeWorkflow.includes(`${input}:`), `production smoke workflow must require input ${input}`);
+}
+assert.match(productionSmokeWorkflow, /node scripts\/production-alpha-smoke\.mjs/);
+assert.match(productionSmokeWorkflow, /production-alpha-smoke-\$\{\{ inputs\.expected_game_sha \}\}/);
+assert.match(productionSmokeWorkflow, /retention-days:\s*90/);
+assert.doesNotMatch(productionSmokeWorkflow, /RUNEFORGE_SMOKE_ALLOW_HTTP/);
+assert.doesNotMatch(productionSmokeWorkflow, /RANKED_RELEASE_CERTIFIED:\s*["']?true|PAYMENT_|MERCADO_PAGO/);
+
+assert.match(productionSmokeScript, /RUNEFORGE_SMOKE_EXPECTED_GAME_SHA/);
+assert.match(productionSmokeScript, /\^\[0-9a-f\]\{40\}\$/);
+assert.match(productionSmokeScript, /must use HTTPS for production smoke certification/);
+assert.match(productionSmokeScript, /must not use a loopback host/);
+assert.match(productionSmokeScript, /RUNEFORGE_SMOKE_ALLOW_HTTP === "true"/);
+assert.match(productionSmokeScript, /\/api\/public\/game\/alpha\/readiness/);
+assert.match(productionSmokeScript, /\/api\/public\/game\/deployment\/provenance/);
+assert.match(productionSmokeScript, /cache-control/);
+assert.match(productionSmokeScript, /rankedOperational/);
+assert.match(productionSmokeScript, /\.alpha-build-verified/);
+assert.match(productionSmokeScript, /data-deploy-verification/);
+assert.match(productionSmokeScript, /a\.alpha-play-cta/);
+assert.match(productionSmokeScript, /PRODUCTION ALPHA SMOKE: PASS/);
+assert.doesNotMatch(productionSmokeScript, /ADMIN_|PAYMENT_|MERCADO_PAGO|Authorization|Bearer/);
+
+assert.match(fullStackWorkflow, /RUNEFORGE_SMOKE_ALLOW_HTTP=true/);
+assert.match(fullStackWorkflow, /RUNEFORGE_SMOKE_EXPECTED_GAME_SHA="\$RUNEFORGE_BACKEND_REF"/);
+assert.match(fullStackWorkflow, /node scripts\/production-alpha-smoke\.mjs/);
+assert.match(fullStackWorkflow, /integration-evidence\/production-smoke/);
+
+console.log("PORTAL CONTRACT: PASS — CMS 2.1 · live cards/collections/regions/keywords/rules/alpha · exact build provenance · pinned cross-repo integration · production smoke gate · no duplicate game authority");
