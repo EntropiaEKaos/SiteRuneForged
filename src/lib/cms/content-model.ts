@@ -73,6 +73,26 @@ export interface HomeContent {
   };
 }
 
+export interface AlphaLaunchContent {
+  eyebrow: string;
+  title: string;
+  description: string;
+  playLabel: string;
+  rulesLabel: string;
+  journeyTitle: string;
+  journeyDescription: string;
+  notesTitle: string;
+  notes: string[];
+  boundariesTitle: string;
+  boundariesDescription: string;
+  home: {
+    label: string;
+    title: string;
+    description: string;
+    ctaLabel: string;
+  };
+}
+
 export interface CardShowcaseContent {
   certifiedTypesLabel: string;
   cardTypes: string[];
