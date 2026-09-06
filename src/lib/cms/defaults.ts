@@ -5,6 +5,7 @@ export const defaultNavigation: NavigationContent = {
   links: [
     { label: "Cartas", href: "/cards" },
     { label: "Regiões", href: "/regions" },
+    { label: "Mecânicas", href: "/keywords" },
     { label: "Regras", href: "/rules" },
     { label: "Lore", href: "/lore" },
     { label: "Notícias", href: "/news" },
