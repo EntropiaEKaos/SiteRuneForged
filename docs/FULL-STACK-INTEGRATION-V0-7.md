@@ -39,7 +39,10 @@ It then certifies the portal in Chromium:
 - live `/collections`;
 - live Vanilla collection detail;
 - six-region `/regions`;
-- live Emberhold detail.
+- live Emberhold detail;
+- live public Keyword Codex;
+- live keyword detail;
+- exact keyword-filtered Cards catalog.
 
 Unavailable/fallback states are explicitly rejected during this gate.
 
@@ -52,10 +55,13 @@ The run captures full-page PNGs for:
 - collections;
 - Vanilla;
 - regions;
-- Emberhold.
+- Emberhold;
+- keyword archive;
+- keyword detail;
+- exact keyword-filtered catalog.
 
 They are uploaded as a `rune-forge-full-stack-<sha>` workflow artifact.
 
 ## Scope
 
-This gate focuses on the public read path. Administrative login/publish flows remain certified in RuneForgedTCG and the SiteRuneForged BFF contracts. A future integration layer can add cross-repository admin-session testing if deployment topology requires it.
+The gate now also verifies that a keyword public usage count exactly matches the card catalog exact-keyword filter. This gate focuses on the public read path. Administrative login/publish flows remain certified in RuneForgedTCG and the SiteRuneForged BFF contracts. A future integration layer can add cross-repository admin-session testing if deployment topology requires it.
