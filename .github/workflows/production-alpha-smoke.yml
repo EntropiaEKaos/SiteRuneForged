@@ -54,7 +54,7 @@ jobs:
           node-version: 22.23.2
 
       - name: Install portal test runtime
-        run: npm install
+        run: npm run ci:install
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
