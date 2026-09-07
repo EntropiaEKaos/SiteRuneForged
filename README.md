@@ -73,9 +73,13 @@ Quando a API pública está tecnicamente indisponível, páginas editoriais pode
 
 As rotas em `/admin` usam BFF same-origin. O cookie `rf_admin_session` continua HttpOnly e a autoridade de sessão permanece no RuneForgedTCG.
 
+O BFF agora também valida `Origin`/Fetch Metadata em toda mutation antes de encaminhar cookies privilegiados, limita o login a 16 KiB e payloads editoriais a 512 KiB medidos no stream real. O portal envia CSP com nonce por request, anti-frame, HSTS, nosniff, Referrer/Permissions Policy e isolamento de origem.
+
 O site apenas encaminha sessão e mutations; `expectedVersion`, RBAC, MFA, locks, histórico, publish/archive/rollback e auditoria são validados pelo backend.
 
 ## Qualidade
+
+Os workflows usam Actions de terceiros fixadas por SHA imutável, seguindo a mesma postura de supply-chain do game.
 
 O GitHub Actions executa:
 
