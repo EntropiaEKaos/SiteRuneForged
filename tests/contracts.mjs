@@ -72,7 +72,10 @@ assert.match(session, /Set-Cookie/);
 // Portal Control BFF hardening: browser-origin enforcement + streamed body ceilings.
 assert.match(portalRequestSecurity, /portalMutationOriginAllowed/);
 assert.match(portalRequestSecurity, /sec-fetch-site/);
-assert.match(portalRequestSecurity, /new URL\(origin\)\.origin === new URL\(request\.url\)\.origin/);
+assert.match(portalRequestSecurity, /request\.headers\.get\("host"\)/);
+assert.match(portalRequestSecurity, /x-forwarded-proto/);
+assert.match(portalRequestSecurity, /parsedOrigin\.host === host/);
+assert.match(portalRequestSecurity, /parsedOrigin\.protocol === protocol/);
 assert.match(portalRequestSecurity, /PortalRequestBodyTooLargeError/);
 assert.match(portalRequestSecurity, /request\.body\.getReader\(\)/);
 assert.match(portalRequestSecurity, /total > maxBytes/);
