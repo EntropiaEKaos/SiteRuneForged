@@ -7,6 +7,9 @@ const packageLock = JSON.parse(read("package-lock.json"));
 const nvmrc = read(".nvmrc").trim();
 const webWorkflow = read(".github/workflows/ci.yml");
 const vercelConfig = JSON.parse(read("vercel.json"));
+const portalRequestSecurity = read("src/lib/portal/request-security.ts");
+const portalMiddleware = read("src/middleware.ts");
+const nextConfig = read("next.config.ts");
 
 const editor = read("src/app/admin/[resource]/ResourceEditor.tsx");
 const proxy = read("src/app/api/portal-admin/site/[...path]/route.ts");
@@ -65,6 +68,23 @@ assert.ok((adminClient.match(/body: JSON\.stringify\(request\)/g) || []).length 
 assert.match(proxy, /Cookie: cookie/);
 assert.doesNotMatch(proxy, /Bearer|Authorization/);
 assert.match(session, /Set-Cookie/);
+
+// Portal Control BFF hardening: browser-origin enforcement + streamed body ceilings.
+assert.match(portalRequestSecurity, /portalMutationOriginAllowed/);
+assert.match(portalRequestSecurity, /sec-fetch-site/);
+assert.match(portalRequestSecurity, /new URL\(origin\)\.origin === new URL\(request\.url\)\.origin/);
+assert.match(portalRequestSecurity, /PortalRequestBodyTooLargeError/);
+assert.match(portalRequestSecurity, /request\.body\.getReader\(\)/);
+assert.match(portalRequestSecurity, /total > maxBytes/);
+assert.match(proxy, /MAX_PORTAL_ADMIN_BODY_BYTES = 512 \* 1024/);
+assert.match(proxy, /portalMutationOriginAllowed\(req\)/);
+assert.match(proxy, /readPortalBoundedText\(req, MAX_PORTAL_ADMIN_BODY_BYTES\)/);
+assert.match(proxy, /Cross-origin portal admin mutation rejected/);
+assert.match(proxy, /status, headers: \{ "Cache-Control": "no-store"/);
+assert.match(session, /MAX_PORTAL_LOGIN_BODY_BYTES = 16 \* 1024/);
+assert.match(session, /portalMutationOriginAllowed\(req\)/);
+assert.match(session, /readPortalBoundedText\(req, MAX_PORTAL_LOGIN_BODY_BYTES\)/);
+assert.match(session, /Cross-origin portal admin mutation rejected/);
 assert.match(publicContent, /\/api\/public\/site\//);
 assert.match(publicContent, /getPublishedList/);
 assert.match(publicContent, /getPublishedItem/);
@@ -305,6 +325,32 @@ assert.equal(packageLock.packages?.["node_modules/react-dom"]?.version, "19.2.8"
 assert.equal(packageLock.packages?.["node_modules/@playwright/test"]?.version, "1.63.0");
 assert.equal(fs.existsSync(".github/workflows/lockfile-bootstrap.yml"), false, "temporary lockfile bootstrap must never ship");
 
+// Browser/transport hardening.
+assert.match(portalMiddleware, /Content-Security-Policy/);
+assert.match(portalMiddleware, /nonce-\$\{nonce\}/);
+assert.match(portalMiddleware, /strict-dynamic/);
+assert.match(portalMiddleware, /frame-ancestors 'none'/);
+assert.match(portalMiddleware, /object-src 'none'/);
+assert.match(portalMiddleware, /crypto\.randomUUID/);
+for (const header of ["X-Content-Type-Options", "X-Frame-Options", "Referrer-Policy", "Permissions-Policy", "Cross-Origin-Opener-Policy", "Cross-Origin-Resource-Policy", "Strict-Transport-Security"]) {
+  assert.ok(nextConfig.includes(header), `next.config.ts must retain security header ${header}`);
+}
+assert.match(nextConfig, /poweredByHeader:\s*false/);
+
+// GitHub Actions are immutable-pinned, matching the game repository release posture.
+for (const workflow of [webWorkflow, fullStackWorkflow, productionSmokeWorkflow]) {
+  assert.doesNotMatch(workflow, /actions\/(?:checkout|setup-node|upload-artifact)@v\d+/);
+}
+assert.match(webWorkflow, /actions\/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1/);
+assert.match(webWorkflow, /actions\/setup-node@820762786026740c76f36085b0efc47a31fe5020/);
+assert.match(webWorkflow, /actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0/);
+assert.match(fullStackWorkflow, /actions\/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1/);
+assert.match(fullStackWorkflow, /actions\/setup-node@820762786026740c76f36085b0efc47a31fe5020/);
+assert.match(fullStackWorkflow, /actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0/);
+assert.match(productionSmokeWorkflow, /actions\/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1/);
+assert.match(productionSmokeWorkflow, /actions\/setup-node@820762786026740c76f36085b0efc47a31fe5020/);
+assert.match(productionSmokeWorkflow, /actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0/);
+
 assert.match(webWorkflow, /runs-on:\s*ubuntu-24\.04/);
 assert.match(webWorkflow, /node-version:\s*22\.23\.2/);
 assert.match(webWorkflow, /npm run ci:install/);
@@ -384,4 +430,4 @@ assert.equal(vercelConfig.installCommand, "npm run ci:install");
 assert.equal(vercelConfig.buildCommand, "npm run production:build");
 assert.equal(vercelConfig.$schema, "https://openapi.vercel.sh/vercel.json");
 
-console.log("PORTAL CONTRACT: PASS — CMS 2.1 · Next 15 deterministic runtime · Vercel Git identity · dual portal/game provenance · Production Alpha Smoke 1.1");
+console.log("PORTAL CONTRACT: PASS — CMS 2.1 · Portal Admin same-origin/body hardening · nonce CSP/security headers · immutable Actions · Vercel Git identity · dual provenance");
