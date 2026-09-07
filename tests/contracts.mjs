@@ -377,7 +377,7 @@ assert.match(portalReleasePreflight, /VERCEL_ENV/);
 assert.match(portalReleasePreflight, /source=\$\{source\}/);
 assert.match(portalReleasePreflight, /GITHUB_SHA.*does not match VERCEL_GIT_COMMIT_SHA/);
 assert.match(portalReleasePreflight, /PORTAL RELEASE PREFLIGHT: PASS/);
-assert.match(portalReleasePreflight, /configured portal SHA/);
+assert.match(portalReleasePreflight, /resolved portal SHA/);
 
 assert.equal(vercelConfig.framework, "nextjs");
 assert.equal(vercelConfig.installCommand, "npm run ci:install");
