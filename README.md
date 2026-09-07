@@ -46,9 +46,13 @@ Essas variáveis são **server-side**. Não use prefixo `NEXT_PUBLIC_` e não ex
 
 ### Vercel
 
+O repositório inclui `vercel.json` com Framework `nextjs`, Install Command `npm run ci:install` e Build Command `npm run production:build`.
+
+Com **System Environment Variables** habilitadas no projeto Vercel, o portal usa automaticamente `VERCEL_GIT_COMMIT_SHA` como identidade Git e `VERCEL_ENV` para `preview`/`production`. Assim, não é necessário copiar manualmente `RUNEFORGE_PORTAL_DEPLOY_SHA` para cada deployment Git. Variáveis RuneForge explícitas continuam tendo precedência e divergências entre fontes de SHA falham fechadas.
+
 Em **Project Settings → Environment Variables**, defina `RUNEFORGE_API_URL` para Preview e Production. Se o frontend jogável estiver em outra origem, defina `RUNEFORGE_GAME_URL`. Para um deploy Alpha/Production rastreável, defina também `RUNEFORGE_EXPECTED_DEPLOY_SHA` com o commit exato já certificado do RuneForgedTCG. Se a origem administrativa for diferente, defina `RUNEFORGE_ADMIN_API_URL`.
 
-Depois de alterar variáveis, faça um novo deployment para que Server Components e BFF usem a configuração atual.
+Depois de alterar variáveis, faça um novo deployment para que Server Components e BFF usem a configuração atual. Veja `docs/VERCEL_ALPHA_DEPLOYMENT.md` para o checklist completo.
 
 ## Conteúdo público
 

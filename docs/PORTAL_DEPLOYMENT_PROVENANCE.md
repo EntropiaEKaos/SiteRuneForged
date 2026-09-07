@@ -13,7 +13,7 @@ Neither value is inferred from UI copy or duplicated content.
 
 ## Runtime configuration
 
-A deploy configures two server-side variables:
+A generic deploy can configure two server-side variables explicitly. On Vercel Git deployments these values can be derived automatically from system identity.
 
 ```env
 RUNEFORGE_PORTAL_DEPLOY_SHA=<exact 40-character SiteRuneForged Git SHA>
@@ -21,6 +21,18 @@ RUNEFORGE_PORTAL_DEPLOY_ENV=<ci|preview|alpha|staging|production>
 ```
 
 Do not use `NEXT_PUBLIC_`.
+
+### Vercel system identity
+
+When explicit RuneForge deployment identity is absent, SiteRuneForged accepts:
+
+- `VERCEL_GIT_COMMIT_SHA` as the exact portal Git SHA;
+- `VERCEL_ENV=preview` as `preview`;
+- `VERCEL_ENV=production` as `production`.
+
+The Vercel project must have access to System Environment Variables enabled.
+
+Explicit `RUNEFORGE_PORTAL_DEPLOY_SHA` / `RUNEFORGE_PORTAL_DEPLOY_ENV` take precedence. If platform SHAs are present, preflight requires them to agree with the resolved portal SHA; it never silently prefers a conflicting identity.
 
 ## Public endpoint
 
@@ -52,7 +64,7 @@ The endpoint exposes no API origins, cookies, admin configuration, database valu
 
 `npm run release:preflight` validates the two variables.
 
-When `GITHUB_SHA` is present, the configured portal SHA must equal it exactly.
+When `GITHUB_SHA` or `VERCEL_GIT_COMMIT_SHA` is present, the resolved portal SHA must equal every available platform SHA exactly.
 
 `npm run production:build` runs the preflight and then the Next.js production build.
 
