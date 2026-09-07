@@ -144,3 +144,58 @@ test("portal deployment provenance API", async ({ request }) => {
   expect(body.portal.commitShort).toBe((process.env.RUNEFORGE_PORTAL_DEPLOY_SHA || "").slice(0, 12));
   expect(body.portal.environment).toBe(process.env.RUNEFORGE_PORTAL_DEPLOY_ENV);
 });
+
+
+test("portal security headers are enforced", async ({ request }) => {
+  const response = await request.get("http://127.0.0.1:3000/");
+  const headers = response.headers();
+  expect(response.status()).toBe(200);
+  expect(headers["content-security-policy"] || "").toContain("script-src");
+  expect(headers["content-security-policy"] || "").toContain("nonce-");
+  expect(headers["content-security-policy"] || "").toContain("strict-dynamic");
+  expect(headers["content-security-policy"] || "").toContain("frame-ancestors 'none'");
+  expect(headers["x-content-type-options"]).toBe("nosniff");
+  expect(headers["x-frame-options"]).toBe("DENY");
+  expect(headers["referrer-policy"]).toBe("strict-origin-when-cross-origin");
+  expect(headers["strict-transport-security"] || "").toContain("max-age=31536000");
+});
+
+test("portal admin BFF rejects cross-origin mutations before backend forwarding", async ({ request }) => {
+  const response = await request.post("http://127.0.0.1:3000/api/portal-admin/session", {
+    headers: {
+      "Origin": "https://evil.example",
+      "Sec-Fetch-Site": "cross-site",
+      "Content-Type": "application/json",
+    },
+    data: JSON.stringify({ username: "admin", password: "invalid" }),
+  });
+  expect(response.status()).toBe(403);
+  expect((await response.json()).error).toContain("Cross-origin");
+  expect(response.headers()["cache-control"] || "").toContain("no-store");
+});
+
+test("portal admin BFF rejects oversized streamed bodies before backend forwarding", async ({ request }) => {
+  const response = await request.post("http://127.0.0.1:3000/api/portal-admin/session", {
+    headers: {
+      "Origin": "http://127.0.0.1:3000",
+      "Sec-Fetch-Site": "same-origin",
+      "Content-Type": "application/json",
+    },
+    data: "x".repeat(17 * 1024),
+  });
+  expect(response.status()).toBe(413);
+  expect((await response.json()).error).toContain("Payload too large");
+});
+
+test("portal CMS BFF rejects oversized mutations before backend forwarding", async ({ request }) => {
+  const response = await request.put("http://127.0.0.1:3000/api/portal-admin/site/home/main", {
+    headers: {
+      "Origin": "http://127.0.0.1:3000",
+      "Sec-Fetch-Site": "same-origin",
+      "Content-Type": "application/json",
+    },
+    data: "x".repeat(513 * 1024),
+  });
+  expect(response.status()).toBe(413);
+  expect((await response.json()).error).toContain("Payload too large");
+});
