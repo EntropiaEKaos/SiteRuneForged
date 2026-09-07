@@ -30,7 +30,15 @@ export function portalMutationOriginAllowed(request: Request): boolean {
   if (!origin) return fetchSite === "same-origin" || fetchSite === "none";
 
   try {
-    return new URL(origin).origin === new URL(request.url).origin;
+    const parsedOrigin = new URL(origin);
+    const requestUrl = new URL(request.url);
+    const host = request.headers.get("host")?.trim() || requestUrl.host;
+    const forwardedProto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim().toLowerCase() || "";
+    const protocol = forwardedProto === "https" || forwardedProto === "http"
+      ? `${forwardedProto}:`
+      : requestUrl.protocol;
+
+    return parsedOrigin.host === host && parsedOrigin.protocol === protocol;
   } catch {
     return false;
   }
