@@ -50,19 +50,22 @@ for (const viewport of [
     await page.screenshot({ path: `visual-evidence/rules-article-${viewport.name}.png`, fullPage: true });
   });
 
-  test(`cards unavailable visual ${viewport.name}`, async ({ page }) => {
+  test(`cards standalone visual ${viewport.name}`, async ({ page }) => {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await page.goto("http://127.0.0.1:3000/cards", { waitUntil: "networkidle" });
     await expect(page.locator("h1")).toContainText("Catálogo de cartas");
-    await expect(page.locator(".card-catalog-empty")).toContainText("não respondeu");
-    await page.screenshot({ path: `visual-evidence/cards-unavailable-${viewport.name}.png`, fullPage: true });
+    await expect(page.locator(".catalog-card")).toHaveCount(24);
+    await expect(page.locator("[data-catalog-source=\"snapshot\"]")).toContainText("Modo standalone");
+    await expect(page.getByText("446", { exact: true })).toBeVisible();
+    await page.screenshot({ path: `visual-evidence/cards-standalone-${viewport.name}.png`, fullPage: true });
   });
 
-  test(`card detail unavailable visual ${viewport.name}`, async ({ page }) => {
+  test(`card detail standalone visual ${viewport.name}`, async ({ page }) => {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
-    await page.goto("http://127.0.0.1:3000/cards/visual-fixture", { waitUntil: "networkidle" });
-    await expect(page.locator("h1")).toContainText("Não foi possível abrir esta carta");
-    await page.screenshot({ path: `visual-evidence/card-detail-unavailable-${viewport.name}.png`, fullPage: true });
+    await page.goto("http://127.0.0.1:3000/cards/forest_pack_shelter", { waitUntil: "networkidle" });
+    await expect(page.locator("h1")).toContainText("Abrigo da Matilha");
+    await expect(page.locator("[data-card-source=\"snapshot\"]")).toContainText("SNAPSHOT CERTIFICADO");
+    await page.screenshot({ path: `visual-evidence/card-detail-standalone-${viewport.name}.png`, fullPage: true });
   });
 
   test(`collections unavailable visual ${viewport.name}`, async ({ page }) => {
