@@ -1,17 +1,19 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getPublicCard } from "@/lib/cards/public-catalog";
+import { getPublicCardState, getStandaloneCardSnapshotInfo } from "@/lib/cards/public-catalog";
 
 export default async function CardDetailPage({ params }: { params: Promise<{ defId: string }> }) {
   const { defId } = await params;
-  const card = await getPublicCard(defId);
+  const state = await getPublicCardState(defId);
+  const card = state.item;
+  const snapshot = getStandaloneCardSnapshotInfo();
   if (card === null) notFound();
 
   if (card === undefined) {
     return (
       <main className="catalog-shell">
         <header className="catalog-topbar"><Link className="content-brand" href="/"><span className="content-brand-mark">RF</span><span><strong>RuneForge</strong><small>Arquivo de cartas</small></span></Link><Link className="content-home-link" href="/cards">← Catálogo</Link></header>
-        <section className="card-catalog-empty detail-unavailable"><span>CONEXÃO INDISPONÍVEL</span><h1>Não foi possível abrir esta carta.</h1><p>O portal não armazena uma cópia paralela da definição. Tente novamente quando a API pública estiver disponível.</p><Link href="/cards">Voltar ao catálogo</Link></section>
+        <section className="card-catalog-empty detail-unavailable"><span>CATÁLOGO INDISPONÍVEL</span><h1>Não foi possível abrir esta carta.</h1><p>Nem a API pública nem o snapshot standalone contêm uma definição utilizável.</p><Link href="/cards">Voltar ao catálogo</Link></section>
       </main>
     );
   }
@@ -40,6 +42,9 @@ export default async function CardDetailPage({ params }: { params: Promise<{ def
 
         <div className="card-detail-copy">
           <div className="content-kicker">{card.rarity} · {card.regions.join(" / ")}</div>
+          <div className="card-detail-source" data-card-source={state.source}>
+            {state.source === "api" ? "API AO VIVO" : `SNAPSHOT CERTIFICADO · ${snapshot.commitShort}`}
+          </div>
           <h1>{card.name}</h1>
           <div className="card-detail-type">{card.type}<span>{card.structuralType !== card.type ? `Base: ${card.structuralType}` : card.structuralType}</span></div>
           <p className="card-rules-text">{card.description}</p>

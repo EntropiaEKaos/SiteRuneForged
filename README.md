@@ -67,7 +67,7 @@ O portal consome APIs publicadas do RuneForgedTCG:
 - Game deployment provenance: `/api/public/game/deployment/provenance`
 - Portal deployment provenance: `/api/public/portal/deployment/provenance`
 
-Quando a API pública está tecnicamente indisponível, páginas editoriais podem usar fallback editorial explicitamente definido. O catálogo de cartas **não** usa uma cópia fallback: ele mostra indisponibilidade para preservar a fonte de verdade única.
+Quando a API pública está tecnicamente indisponível, páginas editoriais podem usar fallback editorial explicitamente definido. O catálogo de cartas possui um **snapshot standalone pré-lançamento** versionado a partir do RuneForgedTCG certificado. Quando `RUNEFORGE_API_URL` responde, a API ao vivo tem prioridade automática; quando o backend ainda não existe ou está indisponível, o portal usa o snapshot local. O snapshot atual contém 446 cartas públicas da Vanilla e provenance do game `4028da3999c168fa43e55c967d2d9cf90d30ebb1` / release `2.97.0`.
 
 ## Portal Control
 
