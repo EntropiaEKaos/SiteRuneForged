@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getPublicCardCatalog, type CardCatalogQuery, type CardFacet } from "@/lib/cards/public-catalog";
+import { getPublicCardCatalog, getStandaloneCardSnapshotInfo, type CardCatalogQuery, type CardFacet } from "@/lib/cards/public-catalog";
 
 type Search = Record<string, string | string[] | undefined>;
 
@@ -42,6 +42,7 @@ function options(facets: CardFacet[]) {
 export default async function CardsPage({ searchParams }: { searchParams?: Promise<Search> }) {
   const query = queryFrom((await searchParams) ?? {});
   const state = await getPublicCardCatalog(query);
+  const snapshot = getStandaloneCardSnapshotInfo();
 
   return (
     <main className="catalog-shell">
@@ -63,16 +64,16 @@ export default async function CardsPage({ searchParams }: { searchParams?: Promi
         <div>
           <span className="content-kicker">ARQUIVO DA FORJA</span>
           <h1>Catálogo de cartas</h1>
-          <p>Explore o catálogo público diretamente da fonte de verdade do jogo. Filtros e detalhes refletem apenas cartas colecionáveis com identidade pública.</p>
+          <p>{state.available && state.source === "api" ? "Explore o catálogo público diretamente da API do jogo." : "Explore o catálogo Vanilla no modo pré-lançamento, usando um snapshot certificado do game até a API pública entrar no ar."} Filtros e detalhes refletem apenas cartas colecionáveis com identidade pública.</p>
         </div>
         <div className="catalog-sigil" aria-hidden="true">◆</div>
       </section>
 
       {!state.available ? (
         <section className="card-catalog-empty">
-          <span>CONEXÃO INDISPONÍVEL</span>
-          <h2>O arquivo de cartas não respondeu.</h2>
-          <p>O portal não mantém uma cópia paralela do catálogo. Tente novamente quando a API pública do RuneForge estiver disponível.</p>
+          <span>CATÁLOGO INDISPONÍVEL</span>
+          <h2>Não foi possível abrir nem a API nem o snapshot local.</h2>
+          <p>O deploy está incompleto. O snapshot certificado deve acompanhar o portal para o modo pré-lançamento.</p>
           <Link href="/cards">Tentar novamente</Link>
         </section>
       ) : (
@@ -124,6 +125,10 @@ export default async function CardsPage({ searchParams }: { searchParams?: Promi
           <section className="catalog-summary">
             <div><strong>{state.data.total}</strong><span>cartas encontradas</span></div>
             <div><span>Catálogo</span><code>{state.data.catalogRevision}</code></div>
+            <div className="catalog-source" data-catalog-source={state.source}>
+              <span>{state.source === "api" ? "Fonte ao vivo" : "Modo standalone"}</span>
+              <code>{state.source === "api" ? "RuneForgedTCG API" : `${snapshot.release} · ${snapshot.commitShort}`}</code>
+            </div>
           </section>
 
           {state.data.items.length ? (
