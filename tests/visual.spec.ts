@@ -91,12 +91,13 @@ for (const viewport of [
     await page.screenshot({ path: `visual-evidence/regions-${viewport.name}.png`, fullPage: true });
   });
 
-  test(`region detail visual ${viewport.name}`, async ({ page }) => {
+  test(`region detail standalone visual ${viewport.name}`, async ({ page }) => {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await page.goto("http://127.0.0.1:3000/regions/emberhold", { waitUntil: "networkidle" });
     await expect(page.locator("h1")).toContainText("Emberhold");
-    await expect(page.locator(".region-catalog-unavailable")).toContainText("catálogo de cartas");
-    await page.screenshot({ path: `visual-evidence/region-detail-${viewport.name}.png`, fullPage: true });
+    await expect(page.locator(".region-card-archive h2")).toContainText("cartas públicas");
+    await expect(page.locator(".collection-card-mini-grid > a").first()).toBeVisible();
+    await page.screenshot({ path: `visual-evidence/region-detail-standalone-${viewport.name}.png`, fullPage: true });
   });
 
   test(`keywords unavailable visual ${viewport.name}`, async ({ page }) => {
