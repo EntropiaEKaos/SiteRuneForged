@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import MobileSiteNavigation from "@/components/MobileSiteNavigation";
 import "./globals.css";
+import "./public-experience.css";
 
 export const metadata: Metadata = {
   title: "RuneForge — Forge Your Legend",
@@ -9,7 +11,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR">
-      <body>{children}</body>
+      <body>
+        {children}
+        <MobileSiteNavigation />
+      </body>
     </html>
   );
 }
