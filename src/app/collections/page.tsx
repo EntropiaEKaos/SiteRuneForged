@@ -30,6 +30,7 @@ export default async function CollectionsPage() {
           <Link href="/cards">Cartas</Link>
           <Link href="/rules">Regras</Link>
           <Link href="/lore">Lore</Link>
+          <Link href="/snapshot">Snapshot</Link>
         </nav>
         <Link className="content-home-link" href="/">Voltar à Forja</Link>
       </header>
@@ -38,7 +39,8 @@ export default async function CollectionsPage() {
         <div>
           <span className="content-kicker">ARQUIVO DE SETS</span>
           <h1>Coleções de RuneForge</h1>
-          <p>Cada coleção publicada aqui vem diretamente do control plane do jogo, com símbolo, lifecycle e contagem real de cartas.</p>
+          <p>O control plane ao vivo continua sendo a fonte preferencial. Quando ele não responde, o portal deriva as coleções do catálogo de 446 cartas preservado no próprio deploy.</p>
+          {state.available ? <small className="content-kicker">{state.source === "api" ? "FONTE · API AO VIVO" : "FONTE · SNAPSHOT CERTIFICADO"}</small> : null}
         </div>
         <div className="collections-rune" aria-hidden="true">ᛟ</div>
       </section>
@@ -46,8 +48,8 @@ export default async function CollectionsPage() {
       {!state.available ? (
         <section className="card-catalog-empty">
           <span>ARQUIVO INDISPONÍVEL</span>
-          <h2>As coleções não responderam.</h2>
-          <p>O portal não mantém uma cópia paralela dos sets. Tente novamente quando a API pública do RuneForge estiver disponível.</p>
+          <h2>Nem a API nem o snapshot responderam.</h2>
+          <p>O portal prefere falhar fechado a exibir uma coleção incompleta como oficial.</p>
           <Link href="/collections">Tentar novamente</Link>
         </section>
       ) : state.collections.length ? (

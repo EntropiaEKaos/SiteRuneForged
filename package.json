@@ -8,7 +8,7 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "visual:test": "playwright test",
-    "contract:test": "node tests/contracts.mjs",
+    "contract:test": "node tests/contracts.mjs && node tests/knowledge-snapshot.mjs",
     "ci:install": "npm ci --no-audit --no-fund",
     "release:preflight": "node scripts/portal-release-preflight.mjs",
     "production:build": "npm run release:preflight && npm run build"

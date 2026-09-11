@@ -1,4 +1,5 @@
 import { apiGet } from "@/lib/runeforge-api/client";
+import { standaloneRules, type SnapshotSource } from "@/data/knowledge-snapshot";
 
 export type PublicCardRuleContract = {
   key: string;
@@ -23,8 +24,8 @@ export type PublicRulesContracts = {
 };
 
 export type PublicRulesContractsState =
-  | { available: true; data: PublicRulesContracts }
-  | { available: false; data: null };
+  | { available: true; source: SnapshotSource; data: PublicRulesContracts }
+  | { available: false; source: null; data: null };
 
 export async function getPublicRulesContracts(): Promise<PublicRulesContractsState> {
   try {
@@ -33,6 +34,7 @@ export async function getPublicRulesContracts(): Promise<PublicRulesContractsSta
     );
     return {
       available: true,
+      source: "api",
       data: {
         version: response.version,
         structural: response.structural,
@@ -41,6 +43,9 @@ export async function getPublicRulesContracts(): Promise<PublicRulesContractsSta
       },
     };
   } catch {
-    return { available: false, data: null };
+    const data = standaloneRules();
+    return data.all.length
+      ? { available: true, source: "snapshot", data }
+      : { available: false, source: null, data: null };
   }
 }

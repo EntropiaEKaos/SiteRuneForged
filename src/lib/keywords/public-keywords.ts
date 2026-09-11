@@ -1,4 +1,5 @@
 import { apiGet } from "@/lib/runeforge-api/client";
+import { standaloneKeywords, type SnapshotSource } from "@/data/knowledge-snapshot";
 
 export type PublicKeyword = {
   key: string;
@@ -15,8 +16,8 @@ export type PublicKeyword = {
 };
 
 export type PublicKeywordCatalogState =
-  | { available: true; items: PublicKeyword[] }
-  | { available: false; items: null };
+  | { available: true; source: SnapshotSource; items: PublicKeyword[] }
+  | { available: false; source: null; items: null };
 
 export async function getPublicKeywords(): Promise<PublicKeywordCatalogState> {
   try {
@@ -25,10 +26,14 @@ export async function getPublicKeywords(): Promise<PublicKeywordCatalogState> {
     );
     return {
       available: true,
+      source: "api",
       items: Array.isArray(response.items) ? response.items : [],
     };
   } catch {
-    return { available: false, items: null };
+    const items = standaloneKeywords();
+    return items.length
+      ? { available: true, source: "snapshot", items }
+      : { available: false, source: null, items: null };
   }
 }
 

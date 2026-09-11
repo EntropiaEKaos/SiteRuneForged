@@ -25,6 +25,7 @@ export default async function KeywordsPage() {
           <Link href="/cards">Cartas</Link>
           <Link href="/regions">Regiões</Link>
           <Link href="/rules">Regras</Link>
+          <Link href="/snapshot">Snapshot</Link>
         </nav>
         <Link className="content-home-link" href="/">Voltar à Forja</Link>
       </header>
@@ -33,7 +34,8 @@ export default async function KeywordsPage() {
         <div>
           <span className="content-kicker">LINGUAGEM DA BATALHA</span>
           <h1>Keywords & Mecânicas</h1>
-          <p>O glossário é lido diretamente dos contratos públicos do RuneForge. Keywords canônicas vêm da engine; mecânicas customizadas aparecem somente depois de publicadas pelo Content Pipeline.</p>
+          <p>O portal consulta primeiro os contratos públicos do RuneForge. Se o runtime do game estiver indisponível, usa o snapshot certificado das 20 keywords canônicas e recalcula seus usos pelas 446 cartas preservadas.</p>
+          {state.available ? <small className="content-kicker">{state.source === "api" ? "FONTE · API AO VIVO" : "FONTE · SNAPSHOT CERTIFICADO"}</small> : null}
         </div>
         <div className="keywords-glyph" aria-hidden="true">✦</div>
       </section>
@@ -41,8 +43,8 @@ export default async function KeywordsPage() {
       {!state.available ? (
         <section className="card-catalog-empty">
           <span>CODEX INDISPONÍVEL</span>
-          <h2>As mecânicas não responderam.</h2>
-          <p>O portal não mantém uma segunda definição das keywords. Tente novamente quando a API pública do RuneForge estiver disponível.</p>
+          <h2>Nem a API nem o snapshot responderam.</h2>
+          <p>O gate de conteúdo impede que uma definição incompleta seja mostrada como regra oficial.</p>
           <Link href="/keywords">Tentar novamente</Link>
         </section>
       ) : state.items.length ? (

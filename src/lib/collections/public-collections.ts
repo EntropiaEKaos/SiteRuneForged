@@ -1,4 +1,5 @@
 import { apiGet } from "@/lib/runeforge-api/client";
+import { standaloneCollections, type SnapshotSource } from "@/data/knowledge-snapshot";
 
 export type PublicCollection = {
   key: string;
@@ -15,18 +16,22 @@ export type PublicCollection = {
 };
 
 export type PublicCollectionsState =
-  | { available: true; collections: PublicCollection[] }
-  | { available: false; collections: null };
+  | { available: true; source: SnapshotSource; collections: PublicCollection[] }
+  | { available: false; source: null; collections: null };
 
 export async function getPublicCollections(): Promise<PublicCollectionsState> {
   try {
     const response = await apiGet<{ ok: true; collections: PublicCollection[] }>("/api/collections");
     return {
       available: true,
+      source: "api",
       collections: Array.isArray(response.collections) ? response.collections : [],
     };
   } catch {
-    return { available: false, collections: null };
+    const collections = standaloneCollections();
+    return collections.length
+      ? { available: true, source: "snapshot", collections }
+      : { available: false, source: null, collections: null };
   }
 }
 

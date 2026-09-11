@@ -64,6 +64,7 @@ export default async function RulesPage() {
           <Link href="/keywords">Mecânicas</Link>
           <Link href="/regions">Regiões</Link>
           <Link href="/collections">Coleções</Link>
+          <Link href="/snapshot">Snapshot</Link>
         </nav>
         <Link className="content-home-link" href="/">Voltar à Forja</Link>
       </header>
@@ -77,13 +78,18 @@ export default async function RulesPage() {
             <strong>DUAS CAMADAS, UMA REGRA</strong>
             <span>Timing, mana e estrutura vêm da engine. Tutoriais e explicações são publicados pelo Portal CMS.</span>
           </div>
+          {contracts.available ? (
+            <small className="content-kicker" data-rules-source={contracts.source}>
+              {contracts.source === "api" ? "FONTE · API AO VIVO" : "FONTE · SNAPSHOT CERTIFICADO"}
+            </small>
+          ) : null}
         </div>
         <div className="rules-intelligence-rune" aria-hidden="true">ᚱ</div>
       </section>
 
       {!contracts.available ? (
         <section className="rules-contract-unavailable">
-          <div><span>CONTRATOS DA ENGINE INDISPONÍVEIS</span><h2>As regras editoriais continuam acessíveis.</h2><p>O portal não substitui timing, mana ou tipos por uma cópia local quando a API da engine está indisponível.</p></div>
+          <div><span>CONTRATOS INDISPONÍVEIS</span><h2>Nem a engine ao vivo nem o snapshot responderam.</h2><p>O portal prefere falhar fechado a inventar timing, mana ou tipos.</p></div>
           <Link href="/rules">Tentar novamente</Link>
         </section>
       ) : (
@@ -132,7 +138,7 @@ export default async function RulesPage() {
       </section>
 
       <footer className="content-footer">
-        <span>RuneForge · contratos da engine + conteúdo Portal CMS</span>
+        <span>RuneForge · contratos da engine + conteúdo Portal CMS · snapshot certificado</span>
         <Link href="/keywords">Explorar mecânicas ↗</Link>
       </footer>
     </main>
