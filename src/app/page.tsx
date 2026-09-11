@@ -20,6 +20,7 @@ export default async function HomePage() {
         </a>
         <nav aria-label="Navegação principal">
           {navigation.links.map((link) => <a href={link.href} key={`${link.label}-${link.href}`}>{link.label}</a>)}
+          <a href="/snapshot">Snapshot</a>
         </nav>
         <a className="nav-cta" href={navigation.cta.href}>{navigation.cta.label}</a>
       </header>
@@ -35,7 +36,7 @@ export default async function HomePage() {
           <div className="hero-stats">{home.hero.stats.map((stat) => <span key={`${stat.value}-${stat.label}`}><strong>{stat.value}</strong> {stat.label}</span>)}</div>
         </div>
         <div className="sigil-stage" aria-hidden="true">
-          <div className="sigil-orbit orbit-one" /><div className="sigil-orbit orbit-two" />
+          <div className="sigil-orbit orbit-one"/><div className="sigil-orbit orbit-two"/>
           <div className="sigil-core"><span>ᚱ</span></div>
           <i className="spark spark-a"/><i className="spark spark-b"/><i className="spark spark-c"/>
         </div>
@@ -69,7 +70,7 @@ export default async function HomePage() {
         <div className="alpha-panel"><div><span className="live-dot"/> {alpha.home.label}</div><h2>{alpha.home.title}</h2><p>{alpha.home.description}</p><a className="primary" href="/alpha">{alpha.home.ctaLabel}</a></div>
       </section>
 
-      <footer><div className="footer-brand"><span className="brand-mark small"><span>RF</span></span><div><strong>RuneForge</strong><small>{navigation.footerTagline}</small></div></div><span>{navigation.footerLabel}</span><span>{navigation.copyright}</span></footer>
+      <footer><div className="footer-brand"><span className="brand-mark small"><span>RF</span></span><div><strong>RuneForge</strong><small>{navigation.footerTagline}</small></div></div><a href="/snapshot">Snapshot de Conhecimento</a><span>{navigation.footerLabel}</span><span>{navigation.copyright}</span></footer>
     </main>
   );
 }
