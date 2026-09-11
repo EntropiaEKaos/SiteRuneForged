@@ -17,7 +17,7 @@
 
 @media(max-width:760px){
   html,body{max-width:100%;overflow-x:hidden}
-  body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+  body:has(.mobile-site-nav){padding-bottom:calc(76px + env(safe-area-inset-bottom))}
 
   /* Existing desktop headers stay useful as compact identity bars; navigation moves to the dock. */
   .nav-shell,.content-nav,.catalog-topbar{
