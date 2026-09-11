@@ -21,8 +21,13 @@ assert.match(knowledge, /standaloneCollections/);
 assert.match(knowledge, /source: "canonical" as const/);
 assert.match(knowledge, /cardCount: usage\.get\(keyword\.key\) \?\? 0/);
 assert.equal((knowledge.match(/engineKeyword:/g) || []).length, 20, "snapshot must preserve all 20 canonical engine keywords");
-assert.equal((knowledge.match(/kind: "structural"/g) || []).length, 6, "snapshot must preserve six structural rule contracts");
-assert.equal((knowledge.match(/kind: "semantic"/g) || []).length, 3, "snapshot must preserve three semantic rule contracts");
+
+for (const key of ["Unit", "Spell", "Enchantment", "Artifact", "Equipment", "Sentinela"]) {
+  assert.match(knowledge, new RegExp(`key: "${key}"[^\\n]*kind: "structural"`), `missing structural rule ${key}`);
+}
+for (const key of ["structure", "ritual", "trap"]) {
+  assert.match(knowledge, new RegExp(`key: "${key}"[^\\n]*kind: "semantic"`), `missing semantic rule ${key}`);
+}
 
 assert.match(keywords, /\/api\/public\/game\/keywords/);
 assert.match(keywords, /standaloneKeywords\(\)/);
