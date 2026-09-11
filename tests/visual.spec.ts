@@ -32,14 +32,15 @@ for (const viewport of [
     await page.screenshot({ path: `visual-evidence/news-${viewport.name}.png`, fullPage: true });
   });
 
-  test(`rules intelligence resilience ${viewport.name}`, async ({ page }) => {
+  test(`rules standalone visual ${viewport.name}`, async ({ page }) => {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await page.goto("http://127.0.0.1:3000/rules", { waitUntil: "networkidle" });
     await expect(page.locator("h1")).toContainText("Regras & Como Jogar");
-    await expect(page.locator(".rules-contract-unavailable")).toContainText("CONTRATOS DA ENGINE INDISPONÍVEIS");
+    await expect(page.locator(".rules-semantic-grid .rule-contract-card")).toHaveCount(3);
+    await expect(page.locator(".rules-structural-grid .rule-contract-card")).toHaveCount(6);
     await expect(page.locator(".rules-editorial-grid .content-card")).toHaveCount(3);
     await expect(page.getByText("Fundamentos do duelo", { exact: true })).toBeVisible();
-    await page.screenshot({ path: `visual-evidence/rules-intelligence-resilience-${viewport.name}.png`, fullPage: true });
+    await page.screenshot({ path: `visual-evidence/rules-standalone-${viewport.name}.png`, fullPage: true });
   });
 
   test(`rules article visual ${viewport.name}`, async ({ page }) => {
@@ -68,19 +69,23 @@ for (const viewport of [
     await page.screenshot({ path: `visual-evidence/card-detail-standalone-${viewport.name}.png`, fullPage: true });
   });
 
-  test(`collections unavailable visual ${viewport.name}`, async ({ page }) => {
+  test(`collections standalone visual ${viewport.name}`, async ({ page }) => {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await page.goto("http://127.0.0.1:3000/collections", { waitUntil: "networkidle" });
     await expect(page.locator("h1")).toContainText("Coleções de RuneForge");
-    await expect(page.locator(".card-catalog-empty")).toContainText("coleções não responderam");
-    await page.screenshot({ path: `visual-evidence/collections-unavailable-${viewport.name}.png`, fullPage: true });
+    await expect(page.getByText("FONTE · SNAPSHOT CERTIFICADO", { exact: true })).toBeVisible();
+    await expect(page.locator(".collection-card-live")).toHaveCount(1);
+    await expect(page.getByText("Vanilla", { exact: true })).toBeVisible();
+    await page.screenshot({ path: `visual-evidence/collections-standalone-${viewport.name}.png`, fullPage: true });
   });
 
-  test(`collection detail unavailable visual ${viewport.name}`, async ({ page }) => {
+  test(`collection detail standalone visual ${viewport.name}`, async ({ page }) => {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
-    await page.goto("http://127.0.0.1:3000/collections/visual-fixture", { waitUntil: "networkidle" });
-    await expect(page.locator("h1")).toContainText("Não foi possível abrir esta coleção");
-    await page.screenshot({ path: `visual-evidence/collection-detail-unavailable-${viewport.name}.png`, fullPage: true });
+    await page.goto("http://127.0.0.1:3000/collections/vanilla", { waitUntil: "networkidle" });
+    await expect(page.locator("h1")).toContainText("Vanilla");
+    await expect(page.locator(".collection-cards-section h2")).toContainText("446 cartas públicas");
+    await expect(page.locator(".collection-card-mini-grid > a").first()).toBeVisible();
+    await page.screenshot({ path: `visual-evidence/collection-detail-standalone-${viewport.name}.png`, fullPage: true });
   });
 
   test(`regions visual ${viewport.name}`, async ({ page }) => {
@@ -100,12 +105,33 @@ for (const viewport of [
     await page.screenshot({ path: `visual-evidence/region-detail-standalone-${viewport.name}.png`, fullPage: true });
   });
 
-  test(`keywords unavailable visual ${viewport.name}`, async ({ page }) => {
+  test(`keywords standalone visual ${viewport.name}`, async ({ page }) => {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await page.goto("http://127.0.0.1:3000/keywords", { waitUntil: "networkidle" });
     await expect(page.locator("h1")).toContainText("Keywords & Mecânicas");
-    await expect(page.locator(".card-catalog-empty")).toContainText("mecânicas não responderam");
-    await page.screenshot({ path: `visual-evidence/keywords-unavailable-${viewport.name}.png`, fullPage: true });
+    await expect(page.getByText("FONTE · SNAPSHOT CERTIFICADO", { exact: true })).toBeVisible();
+    await expect(page.locator(".keyword-card")).toHaveCount(20);
+    await expect(page.getByText("Flying", { exact: true })).toBeVisible();
+    await page.screenshot({ path: `visual-evidence/keywords-standalone-${viewport.name}.png`, fullPage: true });
+  });
+
+  test(`lore manuscript standalone visual ${viewport.name}`, async ({ page }) => {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await page.goto("http://127.0.0.1:3000/lore", { waitUntil: "networkidle" });
+    await expect(page.locator("h1")).toContainText("RuneForge — Livro I");
+    await expect(page.locator(".content-grid .content-card")).toHaveCount(9);
+    await expect(page.getByText("O homem que encontrou uma palavra morta", { exact: true })).toBeVisible();
+    await page.screenshot({ path: `visual-evidence/lore-manuscript-${viewport.name}.png`, fullPage: true });
+  });
+
+  test(`snapshot dashboard visual ${viewport.name}`, async ({ page }) => {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await page.goto("http://127.0.0.1:3000/snapshot", { waitUntil: "networkidle" });
+    await expect(page.locator("h1")).toContainText("Snapshot de Conhecimento RuneForge");
+    await expect(page.getByText("446", { exact: true })).toBeVisible();
+    await expect(page.getByText("20", { exact: true })).toBeVisible();
+    await expect(page.getByText("9", { exact: true }).first()).toBeVisible();
+    await page.screenshot({ path: `visual-evidence/snapshot-dashboard-${viewport.name}.png`, fullPage: true });
   });
 
   test(`alpha launch unavailable visual ${viewport.name}`, async ({ page }) => {
@@ -127,14 +153,14 @@ for (const viewport of [
     await page.screenshot({ path: `visual-evidence/alpha-launch-unavailable-${viewport.name}.png`, fullPage: true });
   });
 
-  test(`keyword detail unavailable visual ${viewport.name}`, async ({ page }) => {
+  test(`keyword detail standalone visual ${viewport.name}`, async ({ page }) => {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await page.goto("http://127.0.0.1:3000/keywords/Flying", { waitUntil: "networkidle" });
-    await expect(page.locator("h1")).toContainText("Não foi possível abrir esta mecânica");
-    await page.screenshot({ path: `visual-evidence/keyword-detail-unavailable-${viewport.name}.png`, fullPage: true });
+    await expect(page.locator("h1")).toContainText("Flying");
+    await expect(page.locator(".keyword-card-archive h2")).toContainText("cartas públicas");
+    await page.screenshot({ path: `visual-evidence/keyword-detail-standalone-${viewport.name}.png`, fullPage: true });
   });
 }
-
 
 test("portal deployment provenance API", async ({ request }) => {
   const response = await request.get("http://127.0.0.1:3000/api/public/portal/deployment/provenance");
@@ -148,7 +174,6 @@ test("portal deployment provenance API", async ({ request }) => {
   expect(body.portal.commitShort).toBe((process.env.RUNEFORGE_PORTAL_DEPLOY_SHA || "").slice(0, 12));
   expect(body.portal.environment).toBe(process.env.RUNEFORGE_PORTAL_DEPLOY_ENV);
 });
-
 
 test("portal security headers are enforced", async ({ request }) => {
   const response = await request.get("http://127.0.0.1:3000/");
