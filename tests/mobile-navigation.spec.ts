@@ -17,7 +17,7 @@ test("mobile navigation is persistent and public pages do not overflow horizonta
   for (const route of publicRoutes) {
     await page.goto(`http://127.0.0.1:3000${route}`, { waitUntil: "networkidle" });
     await expect(page.locator(".mobile-site-nav")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Menu" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Menu", exact: true })).toBeVisible();
 
     const overflow = await page.evaluate(() => ({
       viewport: window.innerWidth,
@@ -31,7 +31,7 @@ test("mobile menu exposes the full RuneForge public information architecture", a
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("http://127.0.0.1:3000/cards", { waitUntil: "networkidle" });
 
-  const trigger = page.getByRole("button", { name: "Menu" });
+  const trigger = page.getByRole("button", { name: "Menu", exact: true });
   await expect(trigger).toHaveAttribute("aria-expanded", "false");
   await trigger.click();
   await expect(trigger).toHaveAttribute("aria-expanded", "true");
