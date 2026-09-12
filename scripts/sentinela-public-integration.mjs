@@ -33,10 +33,11 @@ assert.ok(legacy.sentinela.abilities.every((ability) => !("effect" in ability)),
 
 const detailResponse = await fetch(`${site}/cards/rf296_sent_ilyra`, { cache: "no-store" });
 assert.equal(detailResponse.status, 200, "portal Sentinela detail must return 200");
-const detailHtml = await detailResponse.text();
+const detailHtml = (await detailResponse.text()).replace(/<!-- -->/g, "");
+assert.match(detailHtml, /data-sentinela-abilities="true"/);
 assert.match(detailHtml, /LEALDADE INICIAL 4/);
-assert.match(detailHtml, /\+1: cause 1 de dano ao Nexus inimigo/);
-assert.match(detailHtml, /-2: conceda Ataque Rápido a uma unidade aliada/);
-assert.match(detailHtml, /-6: cause 4 de dano a todos os inimigos/);
+assert.match(detailHtml, /data-loyalty-cost="1"[^>]*>\+1: cause 1 de dano ao Nexus inimigo/);
+assert.match(detailHtml, /data-loyalty-cost="-2"[^>]*>-2: conceda Ataque Rápido a uma unidade aliada/);
+assert.match(detailHtml, /data-loyalty-cost="-6"[^>]*>-6: cause 4 de dano a todos os inimigos/);
 
 console.log("SENTINELA PUBLIC INTEGRATION: PASS — Ilyra + legacy Aurion · loyalty · all abilities · no executable effect leakage · portal detail");
