@@ -78,7 +78,7 @@ export default async function CardsPage({ searchParams }: { searchParams?: Promi
       </header>
 
       <section className="catalog-hero">
-        <div><span className="content-kicker">ARQUIVO DA FORJA · EXPLORER 2.0</span><h1>Encontre a carta certa.</h1><p>{state.available && state.source === "api" ? "Catálogo público diretamente do runtime certificado." : "Catálogo Vanilla preservado pelo snapshot certificado enquanto a API pública não responde."} Combine filtros, compartilhe a URL e atravesse o acervo por identidade mecânica.</p></div>
+        <div><span className="content-kicker">ARQUIVO DA FORJA · EXPLORER 2.0</span><h1>Catálogo de cartas. Encontre a carta certa.</h1><p>{state.available && state.source === "api" ? "Catálogo público diretamente do runtime certificado." : "Catálogo Vanilla preservado pelo snapshot certificado enquanto a API pública não responde."} Combine filtros, compartilhe a URL e atravesse o acervo por identidade mecânica.</p></div>
         <div className="catalog-sigil" aria-hidden="true">◆</div>
       </section>
 
