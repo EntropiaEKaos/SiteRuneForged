@@ -23,6 +23,22 @@ test("Card Explorer 2.0 has shareable advanced filters and list view", async ({ 
   await page.screenshot({ path: "visual-evidence/card-explorer-v2-list.png", fullPage: true });
 });
 
+test("Sentinela cards expose loyalty and all public abilities", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 1000 });
+  await page.goto(`${base}/cards/rf296_sent_ilyra`, { waitUntil: "networkidle" });
+  const sentinela = page.locator("[data-sentinela-abilities]");
+  await expect(sentinela).toBeVisible();
+  await expect(sentinela).toContainText("LEALDADE INICIAL 4");
+  await expect(sentinela.locator("[data-sentinela-ability]")).toHaveCount(3);
+  await expect(sentinela).toContainText("+1: cause 1 de dano ao Nexus inimigo");
+  await expect(sentinela).toContainText("-2: conceda Ataque Rápido a uma unidade aliada");
+  await expect(sentinela).toContainText("-6: cause 4 de dano a todos os inimigos");
+  await page.screenshot({ path: "visual-evidence/sentinela-abilities-ilyra.png", fullPage: true });
+
+  await page.goto(`${base}/cards?type=Sentinela`, { waitUntil: "networkidle" });
+  await expect(page.locator(".catalog-card").first()).toContainText("habilidades");
+});
+
 test("Card detail has sharing, related discovery and SEO", async ({ page }) => {
   await page.goto(`${base}/cards/forest_pack_shelter`, { waitUntil: "networkidle" });
   await expect(page.getByRole("button", { name: "Compartilhar carta" })).toBeVisible();
