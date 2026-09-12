@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useReportWebVitals } from "next/web-vitals";
 
 type AnalyticsPayload = {
@@ -33,13 +33,12 @@ function send(payload: AnalyticsPayload) {
 
 export default function PortalAnalytics() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const search = searchParams.toString();
 
   useEffect(() => {
     if (!pathname || pathname.startsWith("/admin")) return;
-    send({ type: "page_view", path: `${pathname}${search ? `?${search}` : ""}`.slice(0, 500) });
-  }, [pathname, search]);
+    const search = window.location.search;
+    send({ type: "page_view", path: `${pathname}${search}`.slice(0, 500) });
+  }, [pathname]);
 
   useEffect(() => {
     const onClick = (event: MouseEvent) => {
