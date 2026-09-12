@@ -24,13 +24,13 @@ export default function AdminResourceDirectory({ resources }: { resources: Porta
     <section className={ux.directory} aria-label="Diretório de conteúdo">
       <div className={ux.directoryToolbar}>
         <div><span className={styles.kicker}>CENTRAL DE CONTEÚDO</span><h2>Encontre qualquer superfície em segundos.</h2></div>
-        <label className={ux.resourceSearch}><span>Buscar recurso</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Home, lore, SEO, eventos…" /></label>
+        <label className={ux.resourceSearch}><span>Buscar recurso</span><input value={query} onChange={(event) => setQuery(event.currentTarget.value)} placeholder="Home, lore, SEO, eventos…" /></label>
       </div>
       <div className={ux.quickLinks}><a href="/admin/home">Editar Home</a><a href="/admin/news">Publicar notícia</a><a href="/admin/lore">Editar Lore</a><a href="/admin/seo">SEO global</a><a href="/" target="_blank" rel="noreferrer">Abrir portal ↗</a></div>
       {visibleGroups.length ? visibleGroups.map((group) => (
         <section className={ux.resourceGroup} key={group.key}>
           <header><div><span>{group.label}</span><p>{group.description}</p></div><strong>{group.items.length}</strong></header>
-          <div className={styles.resourceGrid}>{group.items.map((resource) => <article className={styles.resourceCard} key={resource.key}><div className={styles.resourceTop}><span>{resource.key.toUpperCase()}</span><em>EDITOR ATIVO</em></div><h3>{resource.label}</h3><p>{resource.description}</p><div className={styles.roleRow}><small>Editar</small><span>{resource.ownerRoles.join(" · ")}</span></div><div className={styles.roleRow}><small>Publicar</small><span>{resource.publishRoles.join(" · ")}</span></div><a className={styles.editorLink} href={`/admin/${resource.key}`}>Abrir editor <span>→</span></a></article>)}</div>
+          <div className={styles.resourceGrid}>{group.items.map((resource) => <article className={styles.resourceCard} data-resource-key={resource.key} key={resource.key}><div className={styles.resourceTop}><span>{resource.key.toUpperCase()}</span><em>EDITOR ATIVO</em></div><h3>{resource.label}</h3><p>{resource.description}</p><div className={styles.roleRow}><small>Editar</small><span>{resource.ownerRoles.join(" · ")}</span></div><div className={styles.roleRow}><small>Publicar</small><span>{resource.publishRoles.join(" · ")}</span></div><a className={styles.editorLink} href={`/admin/${resource.key}`}>Abrir editor <span>→</span></a></article>)}</div>
         </section>
       )) : <div className={ux.noResults}>Nenhum recurso corresponde a “{query}”.</div>}
     </section>
