@@ -1,4 +1,5 @@
 import Link from "next/link";
+import GameScreenshots from "@/components/GameScreenshots";
 import { defaultAlphaLaunch, defaultCardsHome, defaultHome, defaultNavigation, defaultRegionsHome } from "@/lib/cms/defaults";
 import { getPublishedContent, getPublishedList } from "@/lib/cms/public-content";
 import { publicSections, type EditorialPayload } from "@/lib/cms/public-sections";
@@ -6,6 +7,8 @@ import type { AlphaLaunchContent, CardShowcaseContent, HomeContent, NavigationCo
 import { getPublicCardCatalog } from "@/lib/cards/public-catalog";
 import { getPublicCollections } from "@/lib/collections/public-collections";
 import { absolutePortalUrl } from "@/lib/portal/seo";
+
+const instagramHref = "https://www.instagram.com/runeforgeproject/";
 
 export default async function HomePage() {
   const [home, navigation, cards, regions, alpha, liveCatalog, collections, news] = await Promise.all([
@@ -31,6 +34,7 @@ export default async function HomePage() {
     genre: ["Collectible card game", "Strategy"],
     gamePlatform: "Web",
     inLanguage: "pt-BR",
+    sameAs: [instagramHref],
   };
 
   return (
@@ -38,14 +42,14 @@ export default async function HomePage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
       <header className="nav-shell">
         <a className="brand" href="#top" aria-label="RuneForge início"><span className="brand-mark"><span>RF</span></span><span className="brand-copy"><strong>RuneForge</strong><small>{navigation.brandSubtitle}</small></span></a>
-        <nav aria-label="Navegação principal">{navigation.links.map((link) => <a href={link.href} key={`${link.label}-${link.href}`}>{link.label}</a>)}<a href="/cards">Card Explorer</a><a href="/snapshot">Snapshot</a></nav>
+        <nav aria-label="Navegação principal">{navigation.links.map((link) => <a href={link.href} key={`${link.label}-${link.href}`}>{link.label}</a>)}<a href="/cards">Card Explorer</a><a href="#gameplay">Gameplay</a><a href="/snapshot">Snapshot</a></nav>
         <a className="nav-cta" href={navigation.cta.href} data-analytics="home-primary-nav">{navigation.cta.label}</a>
       </header>
 
       <section className="hero hero-v3">
         <div className="hero-aurora" aria-hidden="true" /><div className="hero-grid" aria-hidden="true" />
         <div className="hero-copy"><div className="eyebrow"><span /> {home.hero.eyebrow} <span /></div><h1>{home.hero.title}<br/><em>{home.hero.accentTitle}</em></h1><p>{home.hero.description}</p><div className="actions"><a className="primary" href={home.hero.primaryCta.href} data-analytics="home-hero-primary">{home.hero.primaryCta.label}</a><a className="secondary" href="/cards" data-analytics="home-open-explorer">Explorar 446 cartas</a></div><div className="hero-stats">{home.hero.stats.map((stat) => <span key={`${stat.value}-${stat.label}`}><strong>{stat.value}</strong> {stat.label}</span>)}</div></div>
-        <div className="hero-command-card"><span className="content-kicker">PORTAL OFICIAL</span><strong>Entre pelo universo, pelas cartas ou pelas regras.</strong><div><Link href="/cards">Card Explorer <span>↗</span></Link><Link href="/lore">Livro I <span>↗</span></Link><Link href="/rules">Como jogar <span>↗</span></Link></div><small>{liveCatalog.available ? `${liveCatalog.data.total} cartas públicas sincronizadas` : "Snapshot certificado disponível"}</small></div>
+        <div className="hero-command-card"><span className="content-kicker">PORTAL OFICIAL</span><strong>Entre pelo universo, pelas cartas ou pelas regras.</strong><div><Link href="/cards">Card Explorer <span>↗</span></Link><Link href="/lore">Livro I <span>↗</span></Link><Link href="/rules">Como jogar <span>↗</span></Link><a href={instagramHref} target="_blank" rel="noreferrer" data-analytics="instagram-hero">Instagram <span>@runeforgeproject ↗</span></a></div><small>{liveCatalog.available ? `${liveCatalog.data.total} cartas públicas sincronizadas` : "Snapshot certificado disponível"}</small></div>
         <div className="scroll-mark">EXPLORE <span>↓</span></div>
       </section>
 
@@ -65,11 +69,13 @@ export default async function HomePage() {
 
       <section className="battle-section" id="rules"><div className="battle-overlay" /><div className="battle-copy"><span className="section-kicker">{home.battle.kicker}</span><h2>{home.battle.titleLines.map((line) => <span key={line}>{line}<br/></span>)}<em>{home.battle.accentLine}</em></h2><p>{home.battle.description}</p><div className="battle-points">{home.battle.points.map((point) => <span key={point.number}><b>{point.number}</b> {point.label}</span>)}</div><a className="primary" href={home.battle.cta.href}>{home.battle.cta.label}</a></div><div className="battle-rune" aria-hidden="true">ᛉ</div></section>
 
+      <GameScreenshots />
+
       {latestNews.length ? <section className="section home-news"><div className="section-kicker">CRÔNICAS DA FORJA</div><div className="section-heading"><h2>O que está mudando<br/>em RuneForge.</h2><p>Notícias, devlogs e marcos publicados pelo mesmo CMS versionado que alimenta o portal.</p></div><div className="home-news-grid">{latestNews.map((item) => <Link href={`/news/${encodeURIComponent(item.slug)}`} key={item.slug}><small>{item.payload.kicker || "NOTÍCIA"}</small><h3>{item.payload.title}</h3><p>{item.payload.summary}</p><span>Ler registro →</span></Link>)}</div><div className="home-section-action"><Link href="/news">Todas as notícias →</Link></div></section> : null}
 
       <section className="section alpha" id="alpha"><div className="alpha-panel"><div><span className="live-dot"/> {alpha.home.label}</div><h2>{alpha.home.title}</h2><p>{alpha.home.description}</p><div className="actions"><a className="primary" href="/alpha">{alpha.home.ctaLabel}</a><a className="secondary" href="/roadmap">Ver roadmap</a></div></div></section>
 
-      <footer><div className="footer-brand"><span className="brand-mark small"><span>RF</span></span><div><strong>RuneForge</strong><small>{navigation.footerTagline}</small></div></div><a href="/cards">Card Explorer</a><a href="/snapshot">Snapshot</a><span>{navigation.footerLabel}</span><span>{navigation.copyright}</span></footer>
+      <footer><div className="footer-brand"><span className="brand-mark small"><span>RF</span></span><div><strong>RuneForge</strong><small>{navigation.footerTagline}</small></div></div><a href="/cards">Card Explorer</a><a href="/snapshot">Snapshot</a><a href={instagramHref} target="_blank" rel="noreferrer" data-analytics="instagram-footer">Instagram @runeforgeproject ↗</a><span>{navigation.footerLabel}</span><span>{navigation.copyright}</span></footer>
     </main>
   );
 }
