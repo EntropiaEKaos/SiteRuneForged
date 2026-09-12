@@ -1,11 +1,59 @@
 import type { PublicSentinelaSummary } from "@/lib/cards/public-catalog";
 
 /**
- * Standalone fallback for the 12 Vanilla Sentinelas introduced in RuneForged 2.96.
- * Presentation-only projection copied from the authoritative public card source.
- * No executable effect payload is stored in the portal.
+ * Standalone presentation fallback for every public Vanilla Sentinela currently
+ * present in the certified catalog: six base Sentinelas plus the twelve 2.96
+ * Sentinelas. No executable effect payload is stored in the portal.
  */
 export const SENTINELA_PUBLIC_SUMMARIES: Readonly<Record<string, PublicSentinelaSummary>> = {
+  sent_vulkar: {
+    startingLoyalty: 4,
+    abilities: [
+      { cost: 1, description: "+1: causa 2 de dano a uma criatura" },
+      { cost: -2, description: "-2: causa 3 de dano ao Nexus inimigo" },
+      { cost: -6, description: "-6: causa 5 de dano a todas as criaturas inimigas" },
+    ],
+  },
+  sent_marinna: {
+    startingLoyalty: 5,
+    abilities: [
+      { cost: 1, description: "+1: compra 1 carta" },
+      { cost: -2, description: "-2: devolve uma criatura inimiga à mão" },
+      { cost: -8, description: "-8: dá Barreira a todas as criaturas aliadas" },
+    ],
+  },
+  sent_terrus: {
+    startingLoyalty: 6,
+    abilities: [
+      { cost: 1, description: "+1: dá +0/+2 a todas as criaturas aliadas (aura de trincheira)" },
+      { cost: -3, description: "-3: dá Resistente permanentemente a todas as criaturas aliadas no campo" },
+      { cost: -8, description: "-8: invoca um Golem de Raiz 4/6 com Resistente" },
+    ],
+  },
+  sent_xerath: {
+    startingLoyalty: 4,
+    abilities: [
+      { cost: 1, description: "+1: dá 1 contador de veneno ao inimigo (10 contadores = derrota)" },
+      { cost: -3, description: "-3: destrói uma criatura inimiga" },
+      { cost: -7, description: "-7: cura 8 de vida do seu Nexus" },
+    ],
+  },
+  sent_kaara: {
+    startingLoyalty: 5,
+    abilities: [
+      { cost: 1, description: "+1: dá +1/+1 a todas as Bestas aliadas" },
+      { cost: -2, description: "-2: invoca um Filhote 1/1" },
+      { cost: -9, description: "-9: cura 5 e dá Barreira a uma criatura" },
+    ],
+  },
+  sent_aurion: {
+    startingLoyalty: 4,
+    abilities: [
+      { cost: 1, description: "+1: dá Ímpeto a uma criatura aliada" },
+      { cost: -2, description: "-2: causa 2 de dano a todas as criaturas inimigas" },
+      { cost: -7, description: "-7: dá +3/+3 a todas as criaturas aliadas" },
+    ],
+  },
   rf296_sent_ilyra: {
     startingLoyalty: 4,
     abilities: [
