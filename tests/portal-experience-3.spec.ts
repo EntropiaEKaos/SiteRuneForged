@@ -43,13 +43,13 @@ test("Collection and region surfaces expose catalog intelligence", async ({ page
 });
 
 test("Portal Admin UX 2.0 directory filters resources", async ({ page }) => {
-  await page.goto(`${base}/admin`, { waitUntil: "networkidle" });
+  await page.goto(`${base}/admin?q=seo#content`, { waitUntil: "networkidle" });
   const search = page.getByPlaceholder("Home, lore, SEO, eventos…");
   await expect(search).toBeVisible();
-  await search.fill("seo");
   await expect(search).toHaveValue("seo");
   await expect(page.locator('[data-resource-key="seo"]')).toBeVisible();
   await expect(page.locator('[data-resource-key="home"]')).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Limpar" })).toBeVisible();
 });
 
 test("SEO endpoints index public content and protect admin", async ({ request }) => {
