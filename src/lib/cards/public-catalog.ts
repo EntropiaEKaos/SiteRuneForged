@@ -1,6 +1,16 @@
 import { apiGet, RuneForgeApiError } from "@/lib/runeforge-api/client";
 import snapshotJson from "@/data/card-catalog-snapshot.json";
 
+export type PublicSentinelaAbility = {
+  cost: number;
+  description: string;
+};
+
+export type PublicSentinelaSummary = {
+  startingLoyalty: number;
+  abilities: PublicSentinelaAbility[];
+};
+
 export type PublicCard = {
   defId: string;
   name: string;
@@ -26,6 +36,7 @@ export type PublicCard = {
   emoji: string;
   strategicRole?: string;
   doctrineAffinities: string[];
+  sentinela?: PublicSentinelaSummary;
   collection: {
     key: string;
     code: string;
@@ -203,6 +214,7 @@ function querySnapshot(query: CardCatalogQuery): PublicCardCatalogResponse {
         ...card.classes,
         card.collection.name,
         card.collection.code,
+        ...(card.sentinela?.abilities.map((ability) => ability.description) ?? []),
       ].join(" ").toLocaleLowerCase("en-US");
       if (!haystack.includes(q)) return false;
     }
