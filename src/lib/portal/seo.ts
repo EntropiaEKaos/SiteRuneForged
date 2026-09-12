@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
 
-const fallbackOrigin = "https://runeforge.example";
+function candidateOrigin() {
+  if (process.env.NEXT_PUBLIC_SITE_URL?.trim()) return process.env.NEXT_PUBLIC_SITE_URL.trim();
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim()) return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL.trim()}`;
+  if (process.env.VERCEL_URL?.trim()) return `https://${process.env.VERCEL_URL.trim()}`;
+  return "http://localhost:3000";
+}
 
 export function portalOrigin() {
-  const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (!raw) return fallbackOrigin;
   try {
-    return new URL(raw).origin;
+    return new URL(candidateOrigin()).origin;
   } catch {
-    return fallbackOrigin;
+    return "http://localhost:3000";
   }
 }
 
