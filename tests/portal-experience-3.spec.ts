@@ -9,7 +9,7 @@ test("Homepage 3.0 exposes real discovery surfaces", async ({ page }) => {
   await expect(page.locator(".home-discovery-strip > a")).toHaveCount(3);
   await expect(page.locator(".home-live-cards .home-live-card").first()).toBeVisible();
   await expect(page.locator(".home-foundation")).toContainText("Vanilla");
-  await expect(page.locator('script[type="application/ld+json"]')).toContainText("VideoGame");
+  expect((await page.locator('script[type="application/ld+json"]').textContent()) || "").toContain("VideoGame");
   await page.screenshot({ path: "visual-evidence/home-v3-desktop.png", fullPage: true });
 });
 
@@ -44,10 +44,12 @@ test("Collection and region surfaces expose catalog intelligence", async ({ page
 
 test("Portal Admin UX 2.0 directory filters resources", async ({ page }) => {
   await page.goto(`${base}/admin`, { waitUntil: "networkidle" });
-  await expect(page.getByPlaceholder("Home, lore, SEO, eventos…")).toBeVisible();
-  await page.getByPlaceholder("Home, lore, SEO, eventos…").fill("seo");
-  await expect(page.getByRole("heading", { name: "SEO", exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Home", exact: true })).toHaveCount(0);
+  const search = page.getByPlaceholder("Home, lore, SEO, eventos…");
+  await expect(search).toBeVisible();
+  await search.fill("seo");
+  await expect(search).toHaveValue("seo");
+  await expect(page.locator('[data-resource-key="seo"]')).toBeVisible();
+  await expect(page.locator('[data-resource-key="home"]')).toHaveCount(0);
 });
 
 test("SEO endpoints index public content and protect admin", async ({ request }) => {
