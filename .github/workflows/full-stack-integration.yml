@@ -132,6 +132,10 @@ jobs:
           RUNEFORGE_INTEGRATION_EXPECTED_PORTAL_SHA="$RUNEFORGE_PORTAL_DEPLOY_SHA" \
           node scripts/full-stack-integration.mjs
 
+          RUNEFORGE_INTEGRATION_BACKEND_URL=http://127.0.0.1:3001 \
+          RUNEFORGE_INTEGRATION_SITE_URL=http://127.0.0.1:3000 \
+          node scripts/sentinela-public-integration.mjs
+
           RUNEFORGE_SMOKE_SITE_URL=http://127.0.0.1:3000 \
           RUNEFORGE_SMOKE_GAME_URL=http://127.0.0.1:3001 \
           RUNEFORGE_SMOKE_EXPECTED_GAME_SHA="$RUNEFORGE_BACKEND_REF" \
