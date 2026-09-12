@@ -20,7 +20,7 @@ export default function PortalAdminPage() {
 
       <section className={styles.workspace}>
         <header className={styles.topbar}>
-          <div><span className={styles.kicker}>PORTAL ADMIN UX 2.0</span><h1>Publique o universo.<br/>Sem tocar no código.</h1><p className={styles.topbarLead}>Conteúdo, navegação, lore, campanhas e descoberta reunidos em uma central editorial com versionamento seguro.</p></div>
+          <div><span className={styles.kicker}>PORTAL ADMIN UX 2.0</span><h1>Controle total.<br/>Publique o universo.</h1><p>Conteúdo, navegação, lore, campanhas e descoberta reunidos em uma central editorial com versionamento seguro.</p></div>
           <div className={styles.operator}><span className={styles.statusDot}/><div><strong>CMS 2.1 integrado</strong><small>16 domínios · versionamento · rollback · roles</small></div><a className={styles.operatorLink} href="/admin/login">Entrar</a></div>
         </header>
 
@@ -31,9 +31,7 @@ export default function PortalAdminPage() {
           <article><span>BACKEND</span><strong>2.1</strong><p>CMS + continuidade pública</p></article>
         </section>
 
-        <section id="content" className={styles.section}>
-          <AdminResourceDirectory resources={portalResources} />
-        </section>
+        <section id="content" className={styles.section}><AdminResourceDirectory resources={portalResources} /></section>
 
         <section id="publishing" className={styles.section}>
           <div className={styles.sectionHead}><div><span className={styles.kicker}>PIPELINE EDITORIAL</span><h2>Editar não significa publicar.</h2></div><p>Produção continua protegida por papéis, validação e histórico. Cada mudança gera versão e trilha auditável.</p></div>
