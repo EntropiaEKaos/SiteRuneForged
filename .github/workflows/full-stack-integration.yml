@@ -33,10 +33,10 @@ jobs:
           --health-retries 30
 
     env:
-      RUNEFORGE_BACKEND_REF: 854efa1e7984cecee5e57c34dd8e77713bb269f4
-      RUNEFORGE_DEPLOY_SHA: 854efa1e7984cecee5e57c34dd8e77713bb269f4
+      RUNEFORGE_BACKEND_REF: 59f7b4293390320ca1ced129c2af00565ad966f1
+      RUNEFORGE_DEPLOY_SHA: 59f7b4293390320ca1ced129c2af00565ad966f1
       RUNEFORGE_DEPLOY_ENV: alpha
-      RUNEFORGE_EXPECTED_DEPLOY_SHA: 854efa1e7984cecee5e57c34dd8e77713bb269f4
+      RUNEFORGE_EXPECTED_DEPLOY_SHA: 59f7b4293390320ca1ced129c2af00565ad966f1
       RUNEFORGE_PORTAL_DEPLOY_SHA: ${{ github.sha }}
       RUNEFORGE_PORTAL_DEPLOY_ENV: alpha
       DATABASE_URL: postgresql://runeforge:runeforge_integration_only@localhost:5432/runeforge_integration
@@ -131,6 +131,10 @@ jobs:
           RUNEFORGE_INTEGRATION_EXPECTED_SHA="$RUNEFORGE_BACKEND_REF" \
           RUNEFORGE_INTEGRATION_EXPECTED_PORTAL_SHA="$RUNEFORGE_PORTAL_DEPLOY_SHA" \
           node scripts/full-stack-integration.mjs
+
+          RUNEFORGE_INTEGRATION_BACKEND_URL=http://127.0.0.1:3001 \
+          RUNEFORGE_INTEGRATION_SITE_URL=http://127.0.0.1:3000 \
+          node scripts/sentinela-public-integration.mjs
 
           RUNEFORGE_SMOKE_SITE_URL=http://127.0.0.1:3000 \
           RUNEFORGE_SMOKE_GAME_URL=http://127.0.0.1:3001 \

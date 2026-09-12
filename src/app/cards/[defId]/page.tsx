@@ -49,6 +49,20 @@ export default async function CardDetailPage({ params }: Params) {
           <p className="card-rules-text">{card.description}</p>
           {card.flavor ? <blockquote>{card.flavor}</blockquote> : null}
           {typeof card.power === "number" && typeof card.health === "number" ? <div className="card-detail-combat"><span><small>PODER</small><strong>{card.power}</strong></span><span><small>VIDA</small><strong>{card.health}</strong></span></div> : null}
+
+          {card.sentinela ? (
+            <section className="card-detail-keywords" data-sentinela-abilities>
+              <span>SENTINELA · LEALDADE INICIAL {card.sentinela.startingLoyalty}</span>
+              <div>
+                {card.sentinela.abilities.map((ability, index) => (
+                  <div className="card-rules-text" data-sentinela-ability data-loyalty-cost={ability.cost} key={`${ability.cost}-${index}`}>
+                    {ability.description}
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
           <dl className="card-detail-data"><div><dt>Regiões</dt><dd>{card.regions.join(" · ")}</dd></div><div><dt>Raridade</dt><dd>{card.rarity}</dd></div><div><dt>Raças</dt><dd>{card.races.join(" · ") || "—"}</dd></div><div><dt>Classes</dt><dd>{card.classes.join(" · ") || "—"}</dd></div><div><dt>Papel</dt><dd>{card.strategicRole || "—"}</dd></div><div><dt>Identidade</dt><dd>{card.isChampion ? "Campeão" : card.isLegend ? "Lendária" : "Padrão"}</dd></div></dl>
           <section className="card-detail-keywords"><span>KEYWORDS</span><div>{keywords.length ? keywords.map((keyword) => <Link className="card-keyword-link" href={`/keywords/${encodeURIComponent(keyword)}`} key={keyword}>{keyword}</Link>) : <small>Sem keywords impressas.</small>}</div></section>
           <div className="card-detail-actions"><ShareCardButton title={card.name} /><Link href={`/cards?region=${encodeURIComponent(card.region)}`}>Mais de {card.region}</Link></div>
