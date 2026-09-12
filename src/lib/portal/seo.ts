@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 
 function candidateOrigin() {
-  if (process.env.NEXT_PUBLIC_SITE_URL?.trim()) return process.env.NEXT_PUBLIC_SITE_URL.trim();
-  if (process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim()) return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL.trim()}`;
-  if (process.env.VERCEL_URL?.trim()) return `https://${process.env.VERCEL_URL.trim()}`;
+  const explicit = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (explicit) return explicit;
+  const production = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
+  if (production) return `https://${production}`;
+  const deployment = process.env.VERCEL_URL?.trim();
+  if (deployment) return `https://${deployment}`;
   return "http://localhost:3000";
 }
 
