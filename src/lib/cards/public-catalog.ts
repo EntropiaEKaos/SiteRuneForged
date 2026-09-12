@@ -1,5 +1,6 @@
 import { apiGet, RuneForgeApiError } from "@/lib/runeforge-api/client";
 import snapshotJson from "@/data/card-catalog-snapshot.json";
+import { SENTINELA_PUBLIC_SUMMARIES } from "@/data/sentinela-public-summaries";
 
 export type PublicSentinelaAbility = {
   cost: number;
@@ -123,6 +124,12 @@ type SnapshotShape = {
 
 const snapshot = snapshotJson as SnapshotShape;
 
+function withStandaloneSentinela(card: PublicCard): PublicCard {
+  if (card.sentinela) return card;
+  const sentinela = SENTINELA_PUBLIC_SUMMARIES[card.defId];
+  return sentinela ? { ...card, sentinela } : card;
+}
+
 function queryString(query: CardCatalogQuery) {
   const params = new URLSearchParams();
   for (const [key, raw] of Object.entries(query)) {
@@ -171,15 +178,17 @@ function breakdown(cards: PublicCard[]): CardCatalogBreakdown {
 }
 
 function normalizeApiResponse(data: PublicCardCatalogResponse): PublicCardCatalogResponse {
+  const items = data.items.map(withStandaloneSentinela);
   return {
     ...data,
+    items,
     facets: {
       ...data.facets,
       races: data.facets.races ?? [],
       classes: data.facets.classes ?? [],
       costs: data.facets.costs ?? [],
     },
-    breakdown: data.breakdown ?? breakdown(data.items),
+    breakdown: data.breakdown ?? breakdown(items),
   };
 }
 
@@ -195,7 +204,7 @@ function querySnapshot(query: CardCatalogQuery): PublicCardCatalogResponse {
   const minCost = String(query.minCost ?? "").trim() === "" ? null : Number(query.minCost);
   const maxCost = String(query.maxCost ?? "").trim() === "" ? null : Number(query.maxCost);
 
-  const catalog = sortCards(snapshot.cards, query.sort);
+  const catalog = sortCards(snapshot.cards.map(withStandaloneSentinela), query.sort);
   const filtered = catalog.filter((card) => {
     if (q) {
       const haystack = [
@@ -269,7 +278,8 @@ function querySnapshot(query: CardCatalogQuery): PublicCardCatalogResponse {
 }
 
 function snapshotCard(defId: string) {
-  return snapshot.cards.find((card) => card.defId === defId);
+  const card = snapshot.cards.find((candidate) => candidate.defId === defId);
+  return card ? withStandaloneSentinela(card) : undefined;
 }
 
 export function getStandaloneCardSnapshotInfo() {
@@ -292,7 +302,7 @@ export async function getPublicCardCatalog(query: CardCatalogQuery = {}): Promis
 export async function getPublicCardState(defId: string): Promise<PublicCardState> {
   try {
     const response = await apiGet<{ ok: true; item: PublicCard }>(`/api/public/game/cards/${encodeURIComponent(defId)}`);
-    return { available: true, source: "api", item: response.item };
+    return { available: true, source: "api", item: withStandaloneSentinela(response.item) };
   } catch (error) {
     if (error instanceof RuneForgeApiError && error.status === 404) return { available: false, source: "api", item: null };
     const item = snapshotCard(defId);
