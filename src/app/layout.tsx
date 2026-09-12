@@ -4,6 +4,7 @@ import PortalAnalytics from "@/components/PortalAnalytics";
 import { portalOrigin } from "@/lib/portal/seo";
 import "./globals.css";
 import "./public-experience.css";
+import "./portal-v3.css";
 
 const description = "Portal oficial do RuneForge. Explore cartas, coleções, regiões, regras, mecânicas e as crônicas do jogo.";
 
