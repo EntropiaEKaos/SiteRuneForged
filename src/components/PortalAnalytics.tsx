@@ -36,8 +36,7 @@ export default function PortalAnalytics() {
 
   useEffect(() => {
     if (!pathname || pathname.startsWith("/admin")) return;
-    const search = window.location.search;
-    send({ type: "page_view", path: `${pathname}${search}`.slice(0, 500) });
+    send({ type: "page_view", path: pathname.slice(0, 500) });
   }, [pathname]);
 
   useEffect(() => {
