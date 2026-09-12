@@ -20,11 +20,6 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   });
 }
 
-function loyaltyCostLabel(cost: number) {
-  if (cost > 0) return `+${cost}`;
-  return String(cost);
-}
-
 export default async function CardDetailPage({ params }: Params) {
   const { defId } = await params;
   const state = await getPublicCardState(defId);
@@ -60,8 +55,8 @@ export default async function CardDetailPage({ params }: Params) {
               <span>SENTINELA · LEALDADE INICIAL {card.sentinela.startingLoyalty}</span>
               <div>
                 {card.sentinela.abilities.map((ability, index) => (
-                  <div className="card-rules-text" data-sentinela-ability key={`${ability.cost}-${index}`}>
-                    <strong>{loyaltyCostLabel(ability.cost)}</strong> · {ability.description}
+                  <div className="card-rules-text" data-sentinela-ability data-loyalty-cost={ability.cost} key={`${ability.cost}-${index}`}>
+                    {ability.description}
                   </div>
                 ))}
               </div>
