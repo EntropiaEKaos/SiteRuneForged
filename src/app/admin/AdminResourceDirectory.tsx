@@ -24,7 +24,7 @@ export default function AdminResourceDirectory({ resources }: { resources: Porta
     <section className={ux.directory} aria-label="Diretório de conteúdo">
       <div className={ux.directoryToolbar}>
         <div><span className={styles.kicker}>CENTRAL DE CONTEÚDO</span><h2>Encontre qualquer superfície em segundos.</h2></div>
-        <label className={ux.resourceSearch}><span>Buscar recurso</span><input value={query} onChange={(event) => setQuery(event.currentTarget.value)} placeholder="Home, lore, SEO, eventos…" /></label>
+        <label className={ux.resourceSearch}><span>Buscar recurso</span><input value={query} onInput={(event) => setQuery(event.currentTarget.value)} placeholder="Home, lore, SEO, eventos…" /></label>
       </div>
       <div className={ux.quickLinks}><a href="/admin/home">Editar Home</a><a href="/admin/news">Publicar notícia</a><a href="/admin/lore">Editar Lore</a><a href="/admin/seo">SEO global</a><a href="/" target="_blank" rel="noreferrer">Abrir portal ↗</a></div>
       {visibleGroups.length ? visibleGroups.map((group) => (
