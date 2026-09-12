@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "name": "RuneForged Action First Pilot",
+  "status": "pilot",
+  "canonical": false,
+  "directionDoc": "/docs/ART_DIRECTION_ACTION_V1.md",
+  "rules": {
+    "defaultComposition": "action-first",
+    "staticPortraits": "exception-only",
+    "embeddedUiOrGameplayText": false,
+    "recurringCharacterContinuityRequired": true,
+    "cropSafeCompositionRequired": true
+  },
+  "assets": [
+    {
+      "region": "emberhold",
+      "path": "/standalone-game/art/cards/flagship/emberhold/emberhold_action_pilot.webp",
+      "status": "pilot",
+      "canonical": false,
+      "sha256": "183ab55da5ab14a043471fa3f94ff4a88ce449b043cfcba148c25d2f6e1e4e20"
+    },
+    {
+      "region": "tidecall",
+      "path": "/standalone-game/art/cards/flagship/tidecall/tidecall_action_pilot.webp",
+      "status": "pilot",
+      "canonical": false,
+      "sha256": "b9a8eb0b6c7ef22d30ff92010cead61962b9ff947eb838269a54d13e38f8d51a"
+    },
+    {
+      "region": "voidborn",
+      "path": "/standalone-game/art/cards/flagship/voidborn/voidborn_action_pilot.webp",
+      "status": "pilot",
+      "canonical": false,
+      "sha256": "7d9b9d4f063e6f00906f1513fe0d5c503a894b359eb5a95a979819f245b3d3e3"
+    }
+  ]
+}
