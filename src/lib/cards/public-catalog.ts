@@ -36,6 +36,15 @@ export type PublicCard = {
 
 export type CardFacet = { value: string; count: number; label?: string };
 
+export type CardCatalogBreakdown = {
+  regions: CardFacet[];
+  types: CardFacet[];
+  rarities: CardFacet[];
+  races: CardFacet[];
+  classes: CardFacet[];
+  costs: CardFacet[];
+};
+
 export type PublicCardCatalogResponse = {
   ok: true;
   catalogRevision: string;
@@ -50,7 +59,11 @@ export type PublicCardCatalogResponse = {
     rarities: CardFacet[];
     collections: CardFacet[];
     keywords: CardFacet[];
+    races?: CardFacet[];
+    classes?: CardFacet[];
+    costs?: CardFacet[];
   };
+  breakdown?: CardCatalogBreakdown;
 };
 
 export type CardCatalogQuery = {
@@ -60,6 +73,11 @@ export type CardCatalogQuery = {
   rarity?: string;
   collection?: string;
   keyword?: string;
+  race?: string;
+  class?: string;
+  minCost?: string | number;
+  maxCost?: string | number;
+  sort?: string;
   page?: string | number;
   pageSize?: string | number;
 };
@@ -119,6 +137,41 @@ function countFacet(values: string[]): CardFacet[] {
     .map(([value, count]) => ({ value, count }));
 }
 
+function sortCards(cards: PublicCard[], sort: unknown) {
+  const mode = normalized(sort);
+  return [...cards].sort((a, b) => {
+    if (mode === "name-desc") return b.name.localeCompare(a.name) || a.defId.localeCompare(b.defId);
+    if (mode === "cost-asc") return a.cost - b.cost || a.name.localeCompare(b.name) || a.defId.localeCompare(b.defId);
+    if (mode === "cost-desc") return b.cost - a.cost || a.name.localeCompare(b.name) || a.defId.localeCompare(b.defId);
+    if (mode === "power-desc") return (b.power ?? -1) - (a.power ?? -1) || (b.health ?? -1) - (a.health ?? -1) || a.name.localeCompare(b.name);
+    return a.name.localeCompare(b.name) || a.defId.localeCompare(b.defId);
+  });
+}
+
+function breakdown(cards: PublicCard[]): CardCatalogBreakdown {
+  return {
+    regions: countFacet(cards.flatMap((card) => card.regions)),
+    types: countFacet(cards.map((card) => card.type)),
+    rarities: countFacet(cards.map((card) => card.rarity)),
+    races: countFacet(cards.flatMap((card) => card.races)),
+    classes: countFacet(cards.flatMap((card) => card.classes)),
+    costs: countFacet(cards.map((card) => String(card.cost))),
+  };
+}
+
+function normalizeApiResponse(data: PublicCardCatalogResponse): PublicCardCatalogResponse {
+  return {
+    ...data,
+    facets: {
+      ...data.facets,
+      races: data.facets.races ?? [],
+      classes: data.facets.classes ?? [],
+      costs: data.facets.costs ?? [],
+    },
+    breakdown: data.breakdown ?? breakdown(data.items),
+  };
+}
+
 function querySnapshot(query: CardCatalogQuery): PublicCardCatalogResponse {
   const q = normalized(query.q);
   const region = normalized(query.region);
@@ -126,12 +179,13 @@ function querySnapshot(query: CardCatalogQuery): PublicCardCatalogResponse {
   const rarity = normalized(query.rarity);
   const collection = normalized(query.collection);
   const keyword = normalized(query.keyword);
+  const race = normalized(query.race);
+  const cardClass = normalized(query.class);
+  const minCost = String(query.minCost ?? "").trim() === "" ? null : Number(query.minCost);
+  const maxCost = String(query.maxCost ?? "").trim() === "" ? null : Number(query.maxCost);
 
-  const sorted = [...snapshot.cards].sort(
-    (a, b) => a.name.localeCompare(b.name) || a.defId.localeCompare(b.defId),
-  );
-
-  const filtered = sorted.filter((card) => {
+  const catalog = sortCards(snapshot.cards, query.sort);
+  const filtered = catalog.filter((card) => {
     if (q) {
       const haystack = [
         card.name,
@@ -156,16 +210,12 @@ function querySnapshot(query: CardCatalogQuery): PublicCardCatalogResponse {
     if (region && !card.regions.some((value) => normalized(value) === region)) return false;
     if (type && normalized(card.type) !== type && normalized(card.structuralType) !== type) return false;
     if (rarity && normalized(card.rarity) !== rarity) return false;
-    if (
-      collection
-      && normalized(card.collection.key) !== collection
-      && normalized(card.collection.code) !== collection
-    ) return false;
-    if (
-      keyword
-      && ![...card.keywords, ...card.customKeywords].some((value) => normalized(value) === keyword)
-    ) return false;
-
+    if (collection && normalized(card.collection.key) !== collection && normalized(card.collection.code) !== collection) return false;
+    if (keyword && ![...card.keywords, ...card.customKeywords].some((value) => normalized(value) === keyword)) return false;
+    if (race && !card.races.some((value) => normalized(value) === race)) return false;
+    if (cardClass && !card.classes.some((value) => normalized(value) === cardClass)) return false;
+    if (minCost !== null && Number.isFinite(minCost) && card.cost < minCost) return false;
+    if (maxCost !== null && Number.isFinite(maxCost) && card.cost > maxCost) return false;
     return true;
   });
 
@@ -176,13 +226,10 @@ function querySnapshot(query: CardCatalogQuery): PublicCardCatalogResponse {
   const start = (page - 1) * pageSize;
 
   const collectionCounts = new Map<string, { label: string; count: number }>();
-  for (const card of sorted) {
+  for (const card of catalog) {
     const key = card.collection.key;
     const current = collectionCounts.get(key);
-    collectionCounts.set(key, {
-      label: card.collection.name,
-      count: (current?.count ?? 0) + 1,
-    });
+    collectionCounts.set(key, { label: card.collection.name, count: (current?.count ?? 0) + 1 });
   }
 
   return {
@@ -194,16 +241,18 @@ function querySnapshot(query: CardCatalogQuery): PublicCardCatalogResponse {
     totalPages,
     items: filtered.slice(start, start + pageSize),
     facets: {
-      regions: countFacet(sorted.flatMap((card) => card.regions)),
-      types: countFacet(sorted.map((card) => card.type)),
-      rarities: countFacet(sorted.map((card) => card.rarity)),
+      regions: countFacet(catalog.flatMap((card) => card.regions)),
+      types: countFacet(catalog.map((card) => card.type)),
+      rarities: countFacet(catalog.map((card) => card.rarity)),
       collections: [...collectionCounts.entries()]
         .sort((a, b) => b[1].count - a[1].count || a[0].localeCompare(b[0]))
         .map(([value, data]) => ({ value, label: data.label, count: data.count })),
-      keywords: countFacet(
-        sorted.flatMap((card) => unique([...card.keywords, ...card.customKeywords])),
-      ),
+      keywords: countFacet(catalog.flatMap((card) => unique([...card.keywords, ...card.customKeywords]))),
+      races: countFacet(catalog.flatMap((card) => card.races)),
+      classes: countFacet(catalog.flatMap((card) => card.classes)),
+      costs: countFacet(catalog.map((card) => String(card.cost))),
     },
+    breakdown: breakdown(filtered),
   };
 }
 
@@ -212,19 +261,14 @@ function snapshotCard(defId: string) {
 }
 
 export function getStandaloneCardSnapshotInfo() {
-  return {
-    ...snapshot.source,
-    schemaVersion: snapshot.schemaVersion,
-  };
+  return { ...snapshot.source, schemaVersion: snapshot.schemaVersion };
 }
 
 export async function getPublicCardCatalog(query: CardCatalogQuery = {}): Promise<PublicCardCatalogState> {
   try {
     const search = queryString(query);
-    const data = await apiGet<PublicCardCatalogResponse>(
-      `/api/public/game/cards${search ? `?${search}` : ""}`,
-    );
-    return { available: true, source: "api", data };
+    const data = await apiGet<PublicCardCatalogResponse>(`/api/public/game/cards${search ? `?${search}` : ""}`);
+    return { available: true, source: "api", data: normalizeApiResponse(data) };
   } catch {
     if (snapshot.schemaVersion === 1 && snapshot.cards.length === snapshot.source.total) {
       return { available: true, source: "snapshot", data: querySnapshot(query) };
@@ -235,15 +279,10 @@ export async function getPublicCardCatalog(query: CardCatalogQuery = {}): Promis
 
 export async function getPublicCardState(defId: string): Promise<PublicCardState> {
   try {
-    const response = await apiGet<{ ok: true; item: PublicCard }>(
-      `/api/public/game/cards/${encodeURIComponent(defId)}`,
-    );
+    const response = await apiGet<{ ok: true; item: PublicCard }>(`/api/public/game/cards/${encodeURIComponent(defId)}`);
     return { available: true, source: "api", item: response.item };
   } catch (error) {
-    if (error instanceof RuneForgeApiError && error.status === 404) {
-      return { available: false, source: "api", item: null };
-    }
-
+    if (error instanceof RuneForgeApiError && error.status === 404) return { available: false, source: "api", item: null };
     const item = snapshotCard(defId);
     if (item) return { available: true, source: "snapshot", item };
     return { available: false, source: null, item: undefined };

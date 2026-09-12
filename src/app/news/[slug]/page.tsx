@@ -1,6 +1,13 @@
-import { PortalSectionArticle } from "@/components/PortalEditorial";
+import { getPortalArticleMetadata, PortalSectionArticle } from "@/components/PortalEditorial";
 
-export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
+type Params = { params: Promise<{ slug: string }> };
+
+export async function generateMetadata({ params }: Params) {
+  const { slug } = await params;
+  return getPortalArticleMetadata("news", slug);
+}
+
+export default async function Page({ params }: Params) {
   const { slug } = await params;
   return <PortalSectionArticle section="news" slug={slug} />;
 }

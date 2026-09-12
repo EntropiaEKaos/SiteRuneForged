@@ -246,7 +246,7 @@ assert.match(fullStackWorkflow, /EntropiaEKaos\/RuneForgedTCG/);
 const backendRef = fullStackWorkflow.match(/RUNEFORGE_BACKEND_REF:\s*([0-9a-f]{40})/)?.[1];
 const deploySha = fullStackWorkflow.match(/RUNEFORGE_DEPLOY_SHA:\s*([0-9a-f]{40})/)?.[1];
 const expectedDeploySha = fullStackWorkflow.match(/RUNEFORGE_EXPECTED_DEPLOY_SHA:\s*([0-9a-f]{40})/)?.[1];
-assert.equal(backendRef, "4028da3999c168fa43e55c967d2d9cf90d30ebb1", "full-stack gate must pin the definitive certified backend main SHA");
+assert.equal(backendRef, "854efa1e7984cecee5e57c34dd8e77713bb269f4", "full-stack gate must pin the definitive certified backend main SHA");
 assert.equal(deploySha, backendRef, "backend runtime provenance SHA must equal checkout ref");
 assert.equal(expectedDeploySha, backendRef, "portal expected SHA must equal certified backend checkout ref");
 assert.match(fullStackWorkflow, /RUNEFORGE_DEPLOY_ENV:\s*alpha/);
