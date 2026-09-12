@@ -9,7 +9,11 @@ const workflow = [
   ["04", "Histórico", "Versões permanecem auditáveis e reversíveis."],
 ];
 
-export default function PortalAdminPage() {
+export default async function PortalAdminPage({ searchParams }: { searchParams?: Promise<{ q?: string | string[] }> }) {
+  const params = await searchParams;
+  const rawQuery = Array.isArray(params?.q) ? params?.q[0] : params?.q;
+  const query = String(rawQuery ?? "").slice(0, 120);
+
   return (
     <main className={styles.shell}>
       <aside className={styles.sidebar}>
@@ -31,7 +35,7 @@ export default function PortalAdminPage() {
           <article><span>BACKEND</span><strong>2.1</strong><p>CMS + continuidade pública</p></article>
         </section>
 
-        <section id="content" className={styles.section}><AdminResourceDirectory resources={portalResources} /></section>
+        <section id="content" className={styles.section}><AdminResourceDirectory resources={portalResources} query={query} /></section>
 
         <section id="publishing" className={styles.section}>
           <div className={styles.sectionHead}><div><span className={styles.kicker}>PIPELINE EDITORIAL</span><h2>Editar não significa publicar.</h2></div><p>Produção continua protegida por papéis, validação e histórico. Cada mudança gera versão e trilha auditável.</p></div>
